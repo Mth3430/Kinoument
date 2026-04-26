@@ -1,0 +1,391 @@
+
+> political-comparator@0.1.0 dev
+> next dev
+
+   ▲ Next.js 14.0.0
+   - Local:        http://localhost:3000
+   - Environments: .env.local
+   - Experiments (use at your own risk):
+     · instrumentationHook
+
+ ✓ Compiled /instrumentation in 251ms (58 modules)
+[preload] Chargement des votes et groupes...
+[preload] 13 groupes chargés
+[preload] 6284 votes chargés
+[preload] Démarrage...
+[preload] Début analyse complète : Renaissance
+ ✓ Ready in 9.6s
+ ○ Compiling /page ...
+[fetch] renaissance: 4 pages détectées
+ ✓ Compiled /page in 599ms (1414 modules)
+[fetch] renaissance: page 1/4 - 39 propositions
+[fetch] renaissance: page 2/4 - 42 propositions
+[fetch] renaissance: page 3/4 - 10 propositions
+[fetch] renaissance: page 4/4 - 2 propositions
+[fetch] renaissance: total 93 propositions
+[preload] Renaissance : 93 propositions récupérées
+ ✓ Compiled /api/program in 145ms (748 modules)
+[api/program] renaissance: 4 pages détectées
+[api/program] renaissance: page 1/4 - 39 propositions
+[api/program] renaissance: page 2/4 - 42 propositions
+[api/program] renaissance: page 3/4 - 10 propositions
+[api/program] renaissance: page 4/4 - 2 propositions
+[api/program] renaissance: total 93 propositions
+ ✓ Compiled /api/polls in 75ms (70 modules)
+[preload] Renaissance : terminé et sauvegardé sur disque
+[preload] Début analyse complète : Les Républicains
+[fetch] les-republicains: 6 pages détectées
+[fetch] les-republicains: page 1/6 - 15 propositions
+[fetch] les-republicains: page 2/6 - 12 propositions
+[fetch] les-republicains: page 3/6 - 15 propositions
+[fetch] les-republicains: page 4/6 - 13 propositions
+[fetch] les-republicains: page 5/6 - 29 propositions
+[fetch] les-republicains: page 6/6 - 4 propositions
+[fetch] les-republicains: total 88 propositions
+[preload] Les Républicains : 88 propositions récupérées
+ ✓ Compiled in 127ms (55 modules)
+ ✓ Compiled /api/program in 24ms (69 modules)
+[api/program] renaissance: 4 pages détectées
+[api/program] renaissance: page 1/4 - 39 propositions
+[api/program] renaissance: page 2/4 - 42 propositions
+[api/program] renaissance: page 3/4 - 10 propositions
+[api/program] renaissance: page 4/4 - 2 propositions
+[api/program] renaissance: total 93 propositions
+[api/program] renaissance: 4 pages détectées
+[api/program] renaissance: page 1/4 - 39 propositions
+[api/program] renaissance: page 2/4 - 42 propositions
+[api/program] renaissance: page 3/4 - 10 propositions
+[api/program] renaissance: page 4/4 - 2 propositions
+[api/program] renaissance: total 93 propositions
+[api/program] europe-ecologie-les-verts: 15 pages détectées
+[api/program] europe-ecologie-les-verts: page 1/15 - 8 propositions
+[api/program] europe-ecologie-les-verts: page 2/15 - 8 propositions
+[api/program] europe-ecologie-les-verts: page 3/15 - 9 propositions
+[api/program] europe-ecologie-les-verts: page 4/15 - 9 propositions
+[api/program] europe-ecologie-les-verts: page 5/15 - 7 propositions
+[api/program] europe-ecologie-les-verts: page 6/15 - 8 propositions
+[api/program] europe-ecologie-les-verts: page 7/15 - 13 propositions
+[api/program] europe-ecologie-les-verts: page 8/15 - 12 propositions
+[api/program] europe-ecologie-les-verts: page 9/15 - 9 propositions
+[api/program] europe-ecologie-les-verts: page 10/15 - 10 propositions
+[api/program] europe-ecologie-les-verts: page 11/15 - 10 propositions
+[api/program] europe-ecologie-les-verts: page 12/15 - 9 propositions
+[api/program] europe-ecologie-les-verts: page 13/15 - 12 propositions
+[api/program] europe-ecologie-les-verts: page 14/15 - 11 propositions
+[api/program] europe-ecologie-les-verts: page 15/15 - 9 propositions
+[api/program] europe-ecologie-les-verts: total 144 propositions
+[api/program] renaissance: 4 pages détectées
+[api/program] renaissance: page 1/4 - 39 propositions
+[api/program] renaissance: page 2/4 - 42 propositions
+[api/program] renaissance: page 3/4 - 10 propositions
+[api/program] renaissance: page 4/4 - 2 propositions
+[api/program] renaissance: total 93 propositions
+[preload] Les Républicains : terminé et sauvegardé sur disque
+[preload] Début analyse complète : La France Insoumise
+[fetch] la-france-insoumise: 25 pages détectées
+[fetch] la-france-insoumise: page 1/25 - 6 propositions
+[fetch] la-france-insoumise: page 2/25 - 8 propositions
+[fetch] la-france-insoumise: page 3/25 - 7 propositions
+[fetch] la-france-insoumise: page 4/25 - 7 propositions
+[fetch] la-france-insoumise: page 5/25 - 6 propositions
+[fetch] la-france-insoumise: page 6/25 - 8 propositions
+[fetch] la-france-insoumise: page 7/25 - 7 propositions
+[fetch] la-france-insoumise: page 8/25 - 6 propositions
+[fetch] la-france-insoumise: page 9/25 - 5 propositions
+[fetch] la-france-insoumise: page 10/25 - 6 propositions
+[fetch] la-france-insoumise: page 11/25 - 5 propositions
+[fetch] la-france-insoumise: page 12/25 - 6 propositions
+[fetch] la-france-insoumise: page 13/25 - 6 propositions
+[fetch] la-france-insoumise: page 14/25 - 6 propositions
+[fetch] la-france-insoumise: page 15/25 - 9 propositions
+[fetch] la-france-insoumise: page 16/25 - 6 propositions
+[fetch] la-france-insoumise: page 17/25 - 8 propositions
+[fetch] la-france-insoumise: page 18/25 - 5 propositions
+[fetch] la-france-insoumise: page 19/25 - 8 propositions
+[fetch] la-france-insoumise: page 20/25 - 4 propositions
+[fetch] la-france-insoumise: page 21/25 - 6 propositions
+[fetch] la-france-insoumise: page 22/25 - 8 propositions
+[fetch] la-france-insoumise: page 23/25 - 8 propositions
+[fetch] la-france-insoumise: page 24/25 - 6 propositions
+[fetch] la-france-insoumise: page 25/25 - 3 propositions
+[fetch] la-france-insoumise: total 160 propositions
+[preload] La France Insoumise : 160 propositions récupérées
+[preload] La France Insoumise : terminé et sauvegardé sur disque
+[preload] Début analyse complète : Rassemblement National
+[fetch] rassemblement-national: 5 pages détectées
+[fetch] rassemblement-national: page 1/5 - 12 propositions
+[fetch] rassemblement-national: page 2/5 - 14 propositions
+[fetch] rassemblement-national: page 3/5 - 10 propositions
+[fetch] rassemblement-national: page 4/5 - 14 propositions
+[fetch] rassemblement-national: page 5/5 - 5 propositions
+[fetch] rassemblement-national: total 55 propositions
+[preload] Rassemblement National : 55 propositions récupérées
+[api/program] renaissance: 4 pages détectées
+[api/program] renaissance: page 1/4 - 39 propositions
+[api/program] renaissance: page 2/4 - 42 propositions
+[api/program] renaissance: page 3/4 - 10 propositions
+[api/program] renaissance: page 4/4 - 2 propositions
+[api/program] renaissance: total 93 propositions
+[preload] Rassemblement National : terminé et sauvegardé sur disque
+[preload] Début analyse complète : Parti Socialiste
+[fetch] parti-socialiste: 2 pages détectées
+[fetch] parti-socialiste: page 1/2 - 50 propositions
+[fetch] parti-socialiste: page 2/2 - 39 propositions
+[fetch] parti-socialiste: total 89 propositions
+[preload] Parti Socialiste : 89 propositions récupérées
+[api/program] europe-ecologie-les-verts: 15 pages détectées
+[api/program] europe-ecologie-les-verts: page 1/15 - 8 propositions
+[api/program] europe-ecologie-les-verts: page 2/15 - 8 propositions
+[api/program] europe-ecologie-les-verts: page 3/15 - 9 propositions
+[api/program] europe-ecologie-les-verts: page 4/15 - 9 propositions
+[api/program] europe-ecologie-les-verts: page 5/15 - 7 propositions
+[api/program] europe-ecologie-les-verts: page 6/15 - 8 propositions
+[api/program] europe-ecologie-les-verts: page 7/15 - 13 propositions
+[api/program] europe-ecologie-les-verts: page 8/15 - 12 propositions
+[api/program] europe-ecologie-les-verts: page 9/15 - 9 propositions
+[api/program] europe-ecologie-les-verts: page 10/15 - 10 propositions
+[api/program] europe-ecologie-les-verts: page 11/15 - 10 propositions
+[api/program] europe-ecologie-les-verts: page 12/15 - 9 propositions
+[api/program] europe-ecologie-les-verts: page 13/15 - 12 propositions
+[api/program] europe-ecologie-les-verts: page 14/15 - 11 propositions
+[api/program] europe-ecologie-les-verts: page 15/15 - 9 propositions
+[api/program] europe-ecologie-les-verts: total 144 propositions
+[api/program] europe-ecologie-les-verts: 15 pages détectées
+[api/program] europe-ecologie-les-verts: page 1/15 - 8 propositions
+[api/program] europe-ecologie-les-verts: page 2/15 - 8 propositions
+[api/program] europe-ecologie-les-verts: page 3/15 - 9 propositions
+[api/program] europe-ecologie-les-verts: page 4/15 - 9 propositions
+[api/program] europe-ecologie-les-verts: page 5/15 - 7 propositions
+[api/program] europe-ecologie-les-verts: page 6/15 - 8 propositions
+[api/program] europe-ecologie-les-verts: page 7/15 - 13 propositions
+[api/program] europe-ecologie-les-verts: page 8/15 - 12 propositions
+[api/program] europe-ecologie-les-verts: page 9/15 - 9 propositions
+[api/program] europe-ecologie-les-verts: page 10/15 - 10 propositions
+[api/program] europe-ecologie-les-verts: page 11/15 - 10 propositions
+[api/program] europe-ecologie-les-verts: page 12/15 - 9 propositions
+[api/program] europe-ecologie-les-verts: page 13/15 - 12 propositions
+[api/program] europe-ecologie-les-verts: page 14/15 - 11 propositions
+[api/program] europe-ecologie-les-verts: page 15/15 - 9 propositions
+[api/program] europe-ecologie-les-verts: total 144 propositions
+[preload] Parti Socialiste : terminé et sauvegardé sur disque
+[preload] Début analyse complète : Europe Écologie Les Verts
+[fetch] europe-ecologie-les-verts: 15 pages détectées
+[fetch] europe-ecologie-les-verts: page 1/15 - 8 propositions
+[fetch] europe-ecologie-les-verts: page 2/15 - 8 propositions
+[fetch] europe-ecologie-les-verts: page 3/15 - 9 propositions
+[fetch] europe-ecologie-les-verts: page 4/15 - 9 propositions
+[fetch] europe-ecologie-les-verts: page 5/15 - 7 propositions
+[fetch] europe-ecologie-les-verts: page 6/15 - 8 propositions
+[fetch] europe-ecologie-les-verts: page 7/15 - 13 propositions
+[fetch] europe-ecologie-les-verts: page 8/15 - 12 propositions
+[fetch] europe-ecologie-les-verts: page 9/15 - 9 propositions
+[fetch] europe-ecologie-les-verts: page 10/15 - 10 propositions
+[fetch] europe-ecologie-les-verts: page 11/15 - 10 propositions
+[fetch] europe-ecologie-les-verts: page 12/15 - 9 propositions
+[fetch] europe-ecologie-les-verts: page 13/15 - 12 propositions
+[fetch] europe-ecologie-les-verts: page 14/15 - 11 propositions
+[fetch] europe-ecologie-les-verts: page 15/15 - 9 propositions
+[fetch] europe-ecologie-les-verts: total 144 propositions
+[preload] Europe Écologie Les Verts : 144 propositions récupérées
+ ✓ Compiled in 106ms (55 modules)
+ ✓ Compiled in 73ms (55 modules)
+ ✓ Compiled /api/program in 36ms (69 modules)
+[api/program] renaissance: 4 pages détectées
+[api/program] renaissance: page 1/4 - 50 propositions
+[api/program] renaissance: page 2/4 - 50 propositions
+[api/program] renaissance: page 3/4 - 50 propositions
+[api/program] renaissance: page 4/4 - 42 propositions
+[api/program] renaissance: total 192 propositions
+[api/program] europe-ecologie-les-verts: 15 pages détectées
+[api/program] europe-ecologie-les-verts: page 1/15 - 50 propositions
+[api/program] europe-ecologie-les-verts: page 2/15 - 50 propositions
+[api/program] europe-ecologie-les-verts: page 3/15 - 50 propositions
+[api/program] europe-ecologie-les-verts: page 4/15 - 50 propositions
+[api/program] europe-ecologie-les-verts: page 5/15 - 50 propositions
+[api/program] europe-ecologie-les-verts: page 6/15 - 50 propositions
+[api/program] europe-ecologie-les-verts: page 7/15 - 50 propositions
+[api/program] europe-ecologie-les-verts: page 8/15 - 50 propositions
+[api/program] europe-ecologie-les-verts: page 9/15 - 50 propositions
+[api/program] europe-ecologie-les-verts: page 10/15 - 50 propositions
+[api/program] europe-ecologie-les-verts: page 11/15 - 50 propositions
+[api/program] europe-ecologie-les-verts: page 12/15 - 50 propositions
+[api/program] europe-ecologie-les-verts: page 13/15 - 50 propositions
+[api/program] europe-ecologie-les-verts: page 14/15 - 50 propositions
+[api/program] europe-ecologie-les-verts: page 15/15 - 30 propositions
+[api/program] europe-ecologie-les-verts: total 730 propositions
+[preload] Europe Écologie Les Verts : terminé et sauvegardé sur disque
+[preload] Début analyse complète : Parti Communiste Français
+[fetch] parti-communiste-francais: 6 pages détectées
+[fetch] parti-communiste-francais: page 1/6 - 12 propositions
+[fetch] parti-communiste-francais: page 2/6 - 9 propositions
+[fetch] parti-communiste-francais: page 3/6 - 17 propositions
+[fetch] parti-communiste-francais: page 4/6 - 22 propositions
+[fetch] parti-communiste-francais: page 5/6 - 15 propositions
+[fetch] parti-communiste-francais: page 6/6 - 3 propositions
+[fetch] parti-communiste-francais: total 78 propositions
+[preload] Parti Communiste Français : 78 propositions récupérées
+[preload] Parti Communiste Français : terminé et sauvegardé sur disque
+[preload] Début analyse complète : Reconquête
+[fetch] reconquete: 5 pages détectées
+[fetch] reconquete: page 1/5 - 11 propositions
+[fetch] reconquete: page 2/5 - 14 propositions
+[fetch] reconquete: page 3/5 - 16 propositions
+[fetch] reconquete: page 4/5 - 9 propositions
+[fetch] reconquete: page 5/5 - 7 propositions
+[fetch] reconquete: total 57 propositions
+[preload] Reconquête : 57 propositions récupérées
+[preload] Reconquête : terminé et sauvegardé sur disque
+[preload] Début analyse complète : Place Publique
+[fetch] place-publique: 5 pages détectées
+[fetch] place-publique: page 1/5 - 10 propositions
+[fetch] place-publique: page 2/5 - 7 propositions
+[fetch] place-publique: page 3/5 - 11 propositions
+[fetch] place-publique: page 4/5 - 8 propositions
+[fetch] place-publique: page 5/5 - 7 propositions
+[fetch] place-publique: total 43 propositions
+[preload] Place Publique : 43 propositions récupérées
+[preload] Place Publique : terminé et sauvegardé sur disque
+[preload] Toutes les analyses terminées (ou chargées depuis le cache)
+[api/program] renaissance: 4 pages détectées
+[api/program] renaissance: page 1/4 - 50 propositions
+[api/program] renaissance: page 2/4 - 50 propositions
+[api/program] renaissance: page 3/4 - 50 propositions
+[api/program] renaissance: page 4/4 - 42 propositions
+[api/program] renaissance: total 192 propositions
+[api/program] renaissance: 4 pages détectées
+[api/program] renaissance: page 1/4 - 50 propositions
+[api/program] renaissance: page 2/4 - 50 propositions
+[api/program] renaissance: page 3/4 - 50 propositions
+[api/program] renaissance: page 4/4 - 42 propositions
+[api/program] renaissance: total 192 propositions
+ ✓ Compiled /api/comparisons in 116ms (76 modules)
+ ✓ Compiled in 34ms (76 modules)
+ ✓ Compiled in 30ms (76 modules)
+ ✓ Compiled /party/[slug]/page in 416ms (1084 modules)
+ ✓ Compiled in 173ms (871 modules)
+ ✓ Compiled in 131ms (816 modules)
+ ✓ Compiled /party/[slug]/page in 63ms (268 modules)
+ ✓ Compiled in 145ms (1084 modules)
+ ✓ Compiled in 134ms (1084 modules)
+ ⨯ ./src/app/party/[slug]/page.js
+Error: 
+  [31mx[0m Unexpected token. Did you mean `{'>'}` or `&gt;`?
+     ,-[[36;1;4mC:\Users\mathi\Desktop\Kinoument\src\app\party\[slug]\page.js[0m:209:1]
+ [2m209[0m |                 onMouseLeave={(e) => {
+ [2m210[0m |                   e.currentTarget.style.boxShadow = darkMode ? '0 4px 6px rgba(0, 0, 0, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.1)'
+ [2m211[0m |                 }}
+ [2m212[0m |               >
+     : [31;1m              ^[0m
+ [2m213[0m |                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+ [2m214[0m |                   {/* Status Badge */}
+ [2m215[0m |                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/party/[slug]/page.js
+ ✓ Compiled in 250ms (1084 modules)
+ ⨯ ./src/app/party/[slug]/page.js
+Error: 
+  [31mx[0m Expected corresponding JSX closing tag for <main>
+     ,-[[36;1;4mC:\Users\mathi\Desktop\Kinoument\src\app\party\[slug]\page.js[0m:475:1]
+ [2m475[0m |           ) : (
+ [2m476[0m |             <p>{t.noRelatedVotes}</p>
+ [2m477[0m |           )}
+ [2m478[0m |             </section>
+     : [31;1m            ^^^^^^^^^^[0m
+ [2m479[0m |           </div>
+ [2m480[0m |         </div>
+ [2m481[0m |       )}
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/party/[slug]/page.js
+ ✓ Compiled in 28ms (55 modules)
+ ✓ Compiled /party/[slug]/page in 101ms (1084 modules)
+ ✓ Compiled /party/[slug]/proposal/[index]/page in 164ms (1086 modules)
+ ⨯ TypeError: __webpack_modules__[moduleId] is not a function
+    at __webpack_require__ (C:\Users\mathi\Desktop\Kinoument\.next\server\webpack-runtime.js:33:42)
+    at eval (webpack-internal:///(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fparty%2F%5Bslug%5D%2Fproposal%2F%5Bindex%5D%2Fpage&page=%2Fparty%2F%5Bslug%5D%2Fproposal%2F%5Bindex%5D%2Fpage&appPaths=%2Fparty%2F%5Bslug%5D%2Fproposal%2F%5Bindex%5D%2Fpage&pagePath=private-next-app-dir%2Fparty%2F%5Bslug%5D%2Fproposal%2F%5Bindex%5D%2Fpage.js&appDir=C%3A%5CUsers%5Cmathi%5CDesktop%5CKinoument%5Csrc%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=C%3A%5CUsers%5Cmathi%5CDesktop%5CKinoument&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!:10:120)
+    at (rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fparty%2F%5Bslug%5D%2Fproposal%2F%5Bindex%5D%2Fpage&page=%2Fparty%2F%5Bslug%5D%2Fproposal%2F%5Bindex%5D%2Fpage&appPaths=%2Fparty%2F%5Bslug%5D%2Fproposal%2F%5Bindex%5D%2Fpage&pagePath=private-next-app-dir%2Fparty%2F%5Bslug%5D%2Fproposal%2F%5Bindex%5D%2Fpage.js&appDir=C%3A%5CUsers%5Cmathi%5CDesktop%5CKinoument%5Csrc%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=C%3A%5CUsers%5Cmathi%5CDesktop%5CKinoument&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D! (C:\Users\mathi\Desktop\Kinoument\.next\server\app\party\[slug]\proposal\[index]\page.js:99:1)
+    at __webpack_require__ (C:\Users\mathi\Desktop\Kinoument\.next\server\webpack-runtime.js:33:42)
+    at __webpack_exec__ (C:\Users\mathi\Desktop\Kinoument\.next\server\app\party\[slug]\proposal\[index]\page.js:201:39)
+    at C:\Users\mathi\Desktop\Kinoument\.next\server\app\party\[slug]\proposal\[index]\page.js:202:104
+    at __webpack_require__.X (C:\Users\mathi\Desktop\Kinoument\.next\server\webpack-runtime.js:232:21)
+    at C:\Users\mathi\Desktop\Kinoument\.next\server\app\party\[slug]\proposal\[index]\page.js:202:47
+    at Object.<anonymous> (C:\Users\mathi\Desktop\Kinoument\.next\server\app\party\[slug]\proposal\[index]\page.js:205:3)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14) {
+  type: 'TypeError',
+  page: '/party/renaissance/proposal/0'
+}
+ ✓ Compiled /_error in 98ms (1088 modules)
+ ⨯ Error: Cannot find module 'C:\Users\mathi\Desktop\Kinoument\.next\server\pages\_document.js'
+Require stack:
+- C:\Users\mathi\Desktop\Kinoument\node_modules\next\dist\server\require.js
+- C:\Users\mathi\Desktop\Kinoument\node_modules\next\dist\server\load-components.js
+- C:\Users\mathi\Desktop\Kinoument\node_modules\next\dist\build\utils.js
+- C:\Users\mathi\Desktop\Kinoument\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\Users\mathi\Desktop\Kinoument\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\Users\mathi\Desktop\Kinoument\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\mathi\Desktop\Kinoument\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\mathi\Desktop\Kinoument\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at C:\Users\mathi\Desktop\Kinoument\node_modules\next\dist\server\require-hook.js:54:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\Users\mathi\Desktop\Kinoument\node_modules\next\dist\server\require-hook.js:64:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (C:\Users\mathi\Desktop\Kinoument\node_modules\next\dist\server\require.js:109:84)
+    at C:\Users\mathi\Desktop\Kinoument\node_modules\next\dist\server\load-components.js:55:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (C:\Users\mathi\Desktop\Kinoument\node_modules\next\dist\server\load-components.js:54:33)
+    at async DevServer.findPageComponentsImpl (C:\Users\mathi\Desktop\Kinoument\node_modules\next\dist\server\next-server.js:666:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\mathi\\Desktop\\Kinoument\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\mathi\\Desktop\\Kinoument\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\mathi\\Desktop\\Kinoument\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\mathi\\Desktop\\Kinoument\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\Users\\mathi\\Desktop\\Kinoument\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\Users\\mathi\\Desktop\\Kinoument\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\Users\\mathi\\Desktop\\Kinoument\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\Users\\mathi\\Desktop\\Kinoument\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ]
+}
+[Error: ENOENT: no such file or directory, stat 'C:\Users\mathi\Desktop\Kinoument\.next\cache\webpack\server-development\7.pack.gz'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'stat',
+  path: 'C:\\Users\\mathi\\Desktop\\Kinoument\\.next\\cache\\webpack\\server-development\\7.pack.gz'
+}
+[Error: ENOENT: no such file or directory, stat 'C:\Users\mathi\Desktop\Kinoument\.next\cache\webpack\server-development\7.pack.gz'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'stat',
+  path: 'C:\\Users\\mathi\\Desktop\\Kinoument\\.next\\cache\\webpack\\server-development\\7.pack.gz'
+}
+ ⨯ unhandledRejection: [Error: ENOENT: no such file or directory, stat 'C:\Users\mathi\Desktop\Kinoument\.next\cache\webpack\server-development\7.pack.gz'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'stat',
+  path: 'C:\\Users\\mathi\\Desktop\\Kinoument\\.next\\cache\\webpack\\server-development\\7.pack.gz'
+}
+ ⨯ unhandledRejection: [Error: ENOENT: no such file or directory, stat 'C:\Users\mathi\Desktop\Kinoument\.next\cache\webpack\server-development\7.pack.gz'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'stat',
+  path: 'C:\\Users\\mathi\\Desktop\\Kinoument\\.next\\cache\\webpack\\server-development\\7.pack.gz'
+}
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, stat 'C:\Users\mathi\Desktop\Kinoument\.next\cache\webpack\server-development\7.pack.gz'
+ ✓ Compiled in 374ms (873 modules)
+ ✓ Compiled in 119ms (818 modules)
+ ✓ Compiled in 104ms (818 modules)
