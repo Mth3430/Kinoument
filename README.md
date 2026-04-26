@@ -134,13 +134,6 @@ src/
 - **Métadonnées complètes** : Source des données, date d'analyse, version du modèle IA utilisé
 
 ### 🎁 Surprises à venir
-- **Moteur de comparaison personnalisé** : Comparer directement les programmes de 2 partis côte à côte
-- **Alertes & notifications** : S'abonner aux updates de propositions spécifiques
-- **Export & partage** : Générer des rapports PDF ou partager des analyses
-- **API publique** : Intégration dans d'autres projets civiques
-- **Mobile app** : Application native iOS/Android pour accès mobile optimisé
-- **Débats synthétisés** : Résumer les positions des partis sur les 10 enjeux clés
-- **Dashboard analytics** : Statistiques avancées et tendances politiques
 
 ## 🛠️ Développement
 
