@@ -30,7 +30,11 @@
       "Bash(node find-groups.js)",
       "WebFetch(domain:www2.assemblee-nationale.fr)",
       "Bash(curl -s \"https://www.assemblee-nationale.fr/dyn/org/PO800490\" -I)",
-      "Bash(curl -s https://www.assemblee-nationale.fr/dyn/org/__TRACKED_VAR__ -I)"
+      "Bash(curl -s https://www.assemblee-nationale.fr/dyn/org/__TRACKED_VAR__ -I)",
+      "Bash(timeout 30 node verify-analysis.js)",
+      "Bash(rm verify-analysis.js)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ],
     "additionalDirectories": [
       "\\tmp"
