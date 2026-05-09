@@ -12,10 +12,7 @@ async function ollamaGenerate(prompt, timeout = 45000) {
     body: JSON.stringify({
       model: OLLAMA_MODEL,
       prompt,
-      stream: false,
-      num_gpu: 1,
-      num_thread: 2,
-      keep_alive: '5m'
+      stream: false
     }),
     signal: AbortSignal.timeout(timeout),
   })
