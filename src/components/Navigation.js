@@ -5,12 +5,14 @@ import { usePathname } from 'next/navigation'
 
 const PARTIES = [
   { name: 'Renaissance', slug: 'renaissance', group: 'PO800538' },
-  { name: 'Les Républicains', slug: 'les-republicains', group: 'PO800508' },
-  { name: 'La France Insoumise', slug: 'la-france-insoumise', group: 'PO800490' },
   { name: 'Rassemblement National', slug: 'rassemblement-national', group: 'PO800520' },
+  { name: 'La France Insoumise', slug: 'la-france-insoumise', group: 'PO800490' },
+  { name: 'Les Républicains', slug: 'les-republicains', group: 'PO800508' },
   { name: 'Parti Socialiste', slug: 'parti-socialiste', group: 'PO800496' },
   { name: 'EELV', slug: 'europe-ecologie-les-verts', group: 'PO800526' },
   { name: 'Parti Communiste', slug: 'parti-communiste-francais', group: 'PO800502' },
+  { name: 'Reconquête', slug: 'reconquete', group: 'PO800532' },
+  { name: 'MoDem', slug: 'modem', group: 'PO800484' },
 ]
 
 export default function Navigation({ darkMode, onDarkModeChange, language, onLanguageChange }) {
