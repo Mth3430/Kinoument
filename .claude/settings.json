@@ -39,7 +39,8 @@
       "Bash(curl -s \"http://localhost:3001/api/preload-status\")",
       "Read(//c/Users/mathi/AppData/Local/Temp/claude/c--Users-mathi-Desktop-Kinoument/a8d2b442-d69b-4872-9e89-bbec42c55af5/tasks/**)",
       "Bash(xargs -r kill -9)",
-      "Bash(grep -E \"preload.*Début|preload.*PRÊT|\\\\\\\\[preload\\\\\\\\].*:.*votes liés\")"
+      "Bash(grep -E \"preload.*Début|preload.*PRÊT|\\\\\\\\[preload\\\\\\\\].*:.*votes liés\")",
+      "Bash(curl -s \"https://tous-les-programmes.fr/partis\")"
     ],
     "additionalDirectories": [
       "\\tmp"

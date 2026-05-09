@@ -8,11 +8,10 @@ const PARTIES = [
   { name: 'Rassemblement National', slug: 'rassemblement-national', group: 'PO800520' },
   { name: 'La France Insoumise', slug: 'la-france-insoumise', group: 'PO800490' },
   { name: 'Les Républicains', slug: 'les-republicains', group: 'PO800508' },
-  { name: 'Socialistes et apparentés', slug: 'socialistes-et-apparentes', group: 'PO800496' },
+  { name: 'Socialistes et apparentés', slug: 'parti-socialiste', group: 'PO800496' },
   { name: 'EELV', slug: 'europe-ecologie-les-verts', group: 'PO800526' },
   { name: 'Parti Communiste', slug: 'parti-communiste-francais', group: 'PO800502' },
   { name: 'Reconquête', slug: 'reconquete', group: 'PO800532' },
-  { name: 'MoDem', slug: 'modem', group: 'PO800484' },
 ]
 
 export default function Navigation({ darkMode, onDarkModeChange, language, onLanguageChange }) {
