@@ -40,7 +40,8 @@
       "Read(//c/Users/mathi/AppData/Local/Temp/claude/c--Users-mathi-Desktop-Kinoument/a8d2b442-d69b-4872-9e89-bbec42c55af5/tasks/**)",
       "Bash(xargs -r kill -9)",
       "Bash(grep -E \"preload.*Début|preload.*PRÊT|\\\\\\\\[preload\\\\\\\\].*:.*votes liés\")",
-      "Bash(curl -s \"https://tous-les-programmes.fr/partis\")"
+      "Bash(curl -s \"https://tous-les-programmes.fr/partis\")",
+      "Bash(curl -s -X POST http://localhost:11434/api/generate -H 'Content-Type: application/json' -d '{\"model\":\"llama3\",\"prompt\":\"test\",\"stream\":false}')"
     ],
     "additionalDirectories": [
       "\\tmp"

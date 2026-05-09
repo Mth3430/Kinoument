@@ -146,7 +146,7 @@ AMENDEMENT:
 Cet amendement est-il ALIGNÉ ou CONTRAIRE? Réponds: "aligné" ou "contraire"`
 
   try {
-    const response = await ollamaGenerate(prompt, 3000)
+    const response = await ollamaGenerate(prompt, 15000)
     const lower = response.toLowerCase().trim()
     if (lower.includes('aligné')) return 'aligned'
     if (lower.includes('contraire')) return 'opposed'
@@ -196,7 +196,7 @@ RÉPONSE:
 Donne une analyse constructive (2-3 phrases) qui explique clairement la cohérence ou l'incohérence entre les amendements et la proposition. Sois direct et analyste.`
 
   try {
-    const response = await ollamaGenerate(prompt, 6000)
+    const response = await ollamaGenerate(prompt, 15000)
     if (response && response.length > 20) {
       // Determine status from AI response
       const lower = response.toLowerCase()
