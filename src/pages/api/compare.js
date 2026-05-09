@@ -2,7 +2,7 @@ import { compareProposal } from '../../lib/compareLogic'
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
-    const { proposal = 'amende', partyGroup = 'PO845407' } = req.query
+    const { proposal = 'amende', partyGroup = 'PO800538' } = req.query
     req = { ...req, method: 'POST', body: { proposal, partyGroup } }
   } else if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })

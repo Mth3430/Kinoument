@@ -1,70 +1,173 @@
 import { unzipSync } from 'fflate'
 
-const AMENDMENTS_URL = 'https://data.assemblee-nationale.fr/static/openData/repository/17/loi/amendements_div_legis/Amendements.json.zip'
-const CACHE_TTL = 60 * 60 * 1000 // 1 hour (large file, cache longer)
+const AMENDMENTS_URL = 'https://data.assemblee-nationale.fr/static/openData/repository/16/loi/amendements_div_legis/Amendements.json.zip'
+const CACHE_TTL = 60 * 60 * 1000 // 1 hour
+const MEMORY_CACHE = new Map() // Cache en mémoire des amendements chargés
 
-// index: numero -> { exposeSommaire, dispositif, auteur, sort }
-let index = null
-let cacheTime = 0
+let fileIndex = null // Index des noms de fichiers par numéro
+let indexTime = 0
+let cachedArchive = null // Cache l'archive entière en mémoire après first download
+
+function decodeHtmlEntities(text) {
+  if (typeof text !== 'string') return text
+  // Decode HTML entities
+  const entities = {
+    '&quot;': '"', '&apos;': "'", '&amp;': '&', '&lt;': '<', '&gt;': '>',
+    '&nbsp;': ' ', '&middot;': '·', '&ndash;': '–', '&mdash;': '—',
+    '&lsquo;': "'", '&rsquo;': "'", '&ldquo;': '"', '&rdquo;': '"',
+    '&copy;': '©', '&reg;': '®', '&deg;': '°'
+  }
+
+  let result = text
+  for (const [entity, char] of Object.entries(entities)) {
+    result = result.replace(new RegExp(entity, 'g'), char)
+  }
+  // Handle numeric entities like &#x00E8; (è)
+  result = result.replace(/&#x([0-9A-Fa-f]+);/g, (match, hex) => {
+    return String.fromCharCode(parseInt(hex, 16))
+  })
+  result = result.replace(/&#(\d+);/g, (match, dec) => {
+    return String.fromCharCode(parseInt(dec, 10))
+  })
+  return result
+}
 
 function extractText(val) {
   if (!val) return ''
-  if (typeof val === 'string') return val
+  if (typeof val === 'string') {
+    // Remove HTML tags and decode entities
+    return decodeHtmlEntities(val.replace(/<[^>]*>/g, '')).trim()
+  }
   if (typeof val === 'object') {
     return val['#text'] || val.texte || val.libelle || Object.values(val).find(v => typeof v === 'string') || ''
   }
   return ''
 }
 
-export async function getAmendmentText(numero) {
-  if (!numero) return null
-  await ensureIndex()
-  return index.get(String(numero).trim()) || null
-}
+// Build index of filenames to amendment numbers and cache the archive
+async function buildFileIndex() {
+  if (fileIndex && Date.now() - indexTime < CACHE_TTL) return fileIndex
 
-async function ensureIndex() {
-  if (index && Date.now() - cacheTime < CACHE_TTL) return
+  console.log('[amendmentsCache] Construction de l\'index des fichiers...')
 
-  const response = await fetch(AMENDMENTS_URL)
-  if (!response.ok) throw new Error('Failed to fetch amendments data')
+  try {
+    const response = await fetch(AMENDMENTS_URL, { signal: AbortSignal.timeout(600000) })
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
 
-  const arrayBuffer = await response.arrayBuffer()
-  const uint8 = new Uint8Array(arrayBuffer)
-  const newIndex = new Map()
+    const arrayBuffer = await response.arrayBuffer()
+    const uint8 = new Uint8Array(arrayBuffer)
+    const archive = unzipSync(uint8)
 
-  const archive = unzipSync(uint8)
-  const fileNames = Object.keys(archive).filter((n) => n.toLowerCase().endsWith('.json'))
+    // Cache the entire archive in memory for subsequent amendment loads
+    cachedArchive = archive
 
-  for (const fileName of fileNames) {
-    const text = new TextDecoder().decode(archive[fileName])
-    let data
-    try { data = JSON.parse(text) } catch { continue }
+    const newIndex = new Map()
+    const fileNames = Object.keys(archive).filter((n) => n.toLowerCase().endsWith('.json'))
 
-    const items = Array.isArray(data)
-      ? data
-      : Array.isArray(data.amendements?.amendement)
-        ? data.amendements.amendement
-        : data.amendement
-          ? [data.amendement]
-          : [data]
+    console.log(`[amendmentsCache] ${fileNames.length} fichiers trouvés`)
 
-    for (const item of items) {
-      const amdt = item.amendement || item
-      const numero = extractText(amdt.numero || amdt.numAmdt)
-      if (!numero) continue
-
-      const exposeSommaire = extractText(amdt.exposeSommaire || amdt.exposé || amdt.expose)
-      const dispositif = extractText(amdt.dispositif || amdt.corps?.dispositif)
-      const auteur = extractText(amdt.signataires?.libelle || amdt.auteur?.libelle || amdt.auteur)
-      const sort = extractText(amdt.sort?.libelle || amdt.sort)
-
-      // Keep the first match (files are split by text, so numero may repeat across texts)
-      if (!newIndex.has(numero)) {
-        newIndex.set(numero, { exposeSommaire, dispositif, auteur, sort })
+    // Créer un mapping: numéro → nom de fichier
+    for (const fileName of fileNames) {
+      // Format: .../AMANR5L16PO59047BTC2071P0D1N000029.json
+      // Extraire le numéro à la fin: 000029
+      const match = fileName.match(/N(\d+)\.json$/i)
+      if (match) {
+        const numero = String(parseInt(match[1])) // "000029" → "29"
+        newIndex.set(numero, fileName)
       }
     }
+
+    fileIndex = newIndex
+    indexTime = Date.now()
+    console.log(`[amendmentsCache] Index créé: ${newIndex.size} amendements indexés`)
+    return newIndex
+  } catch (err) {
+    console.error('[amendmentsCache] Erreur création index:', err.message)
+    return new Map()
+  }
+}
+
+// Load a single amendment file from the ZIP
+async function loadAmendmentFromZip(numeroAmendement) {
+  try {
+    // Build index first (if not already built)
+    const index = await buildFileIndex()
+    const fileName = index.get(String(numeroAmendement))
+
+    if (!fileName) {
+      console.log(`[amendmentsCache] Amendement ${numeroAmendement} non trouvé dans l'index`)
+      return null
+    }
+
+    // Use cached archive if available, otherwise download
+    let archive = cachedArchive
+    if (!archive) {
+      const response = await fetch(AMENDMENTS_URL, { signal: AbortSignal.timeout(600000) })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const arrayBuffer = await response.arrayBuffer()
+      const uint8 = new Uint8Array(arrayBuffer)
+      archive = unzipSync(uint8)
+      cachedArchive = archive
+    }
+
+    if (!archive[fileName]) {
+      console.log(`[amendmentsCache] Fichier ${fileName} non trouvé dans le ZIP`)
+      return null
+    }
+
+    const text = new TextDecoder().decode(archive[fileName])
+    const data = JSON.parse(text)
+    const amdt = data.amendement || data
+
+    // Extract from nested structure: corps.contenuAuteur contains the actual text
+    const contenuAuteur = amdt.corps?.contenuAuteur || {}
+    const exposeSommaire = extractText(contenuAuteur.exposeSommaire || contenuAuteur.resume)
+    const dispositif = extractText(contenuAuteur.dispositif || contenuAuteur.texte)
+    const auteur = extractText(amdt.signataires?.libelle || amdt.auteur?.libelle || amdt.auteur)
+    const sort = extractText(amdt.cycleDeVie?.sort || amdt.sort?.libelle || amdt.sort)
+
+    const result = {
+      numero: numeroAmendement,
+      exposeSommaire,
+      dispositif,
+      auteur,
+      sort
+    }
+
+    // Cache en mémoire
+    MEMORY_CACHE.set(String(numeroAmendement), result)
+    return result
+  } catch (err) {
+    console.warn(`[amendmentsCache] Erreur chargement amendement ${numeroAmendement}:`, err.message)
+    return null
+  }
+}
+
+// Pré-charger l'index et le ZIP en cache (appelé au démarrage)
+export async function preloadAmendmentsCache() {
+  console.log('[amendmentsCache] Pré-chargement en arrière-plan...')
+  try {
+    await buildFileIndex()
+    console.log('[amendmentsCache] Pré-chargement terminé')
+  } catch (err) {
+    console.warn('[amendmentsCache] Pré-chargement échoué:', err.message)
+  }
+}
+
+export async function getAmendmentText(numero) {
+  if (!numero) return null
+
+  const key = String(numero).trim()
+
+  // Vérifier cache mémoire d'abord
+  if (MEMORY_CACHE.has(key)) {
+    return MEMORY_CACHE.get(key)
   }
 
-  index = newIndex
-  cacheTime = Date.now()
+  // Charger depuis le ZIP
+  const result = await loadAmendmentFromZip(key)
+  if (!result && MEMORY_CACHE.size === 0) {
+    console.log(`[amendmentsCache] Premier appel getAmendmentText pour ${key}: ${result ? 'trouvé' : 'non trouvé'}`)
+  }
+  return result
 }

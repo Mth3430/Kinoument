@@ -17,6 +17,7 @@ export default function PartyPage() {
   const [language, setLanguage] = useState(searchParams.get('lang') || 'fr')
   const [darkMode, setDarkMode] = useState(true)
   const [displayedCount, setDisplayedCount] = useState(30)
+  const [selectedThemes, setSelectedThemes] = useState([])
   const pollingRef = useRef(null)
   const sentinelRef = useRef(null)
 
@@ -53,16 +54,38 @@ export default function PartyPage() {
 
   const t = translations[language]
 
+  // Extraire tous les thèmes uniques
+  const allThemes = Array.from(
+    new Set(comparisons.flatMap(c => c.proposal?.themes?.map(t => t.name) || []))
+  ).sort()
+
+  // Filtrer les comparisons basé sur les thèmes sélectionnés
+  const filteredComparisons = selectedThemes.length === 0
+    ? comparisons
+    : comparisons.filter(c => {
+        const hasTheme = c.proposal?.themes?.some(t => selectedThemes.includes(t.name))
+        return hasTheme
+      })
+
+  const toggleTheme = (theme) => {
+    setSelectedThemes(prev =>
+      prev.includes(theme)
+        ? prev.filter(t => t !== theme)
+        : [...prev, theme]
+    )
+  }
+
   const parties = [
-    { name: 'Renaissance', slug: 'renaissance', group: 'PO845407' },
-    { name: 'Les Républicains', slug: 'les-republicains', group: 'PO845425' },
-    { name: 'La France Insoumise', slug: 'la-france-insoumise', group: 'PO845413' },
-    { name: 'Rassemblement National', slug: 'rassemblement-national', group: 'PO845401' },
-    { name: 'Parti Socialiste', slug: 'parti-socialiste', group: 'PO845419' },
-    { name: 'Europe Écologie Les Verts', slug: 'europe-ecologie-les-verts', group: 'PO845439' },
-    { name: 'Parti Communiste Français', slug: 'parti-communiste-francais', group: 'PO845514' },
-    { name: 'Reconquête', slug: 'reconquete', group: 'PO847173' },
-    { name: 'Place Publique', slug: 'place-publique', group: 'PO845454' },
+    { name: 'Renaissance', slug: 'renaissance', group: 'PO800538' },
+    { name: 'Les Républicains', slug: 'les-republicains', group: 'PO800508' },
+    { name: 'La France Insoumise', slug: 'la-france-insoumise', group: 'PO800490' },
+    { name: 'Rassemblement National', slug: 'rassemblement-national', group: 'PO800520' },
+    { name: 'Parti Socialiste', slug: 'parti-socialiste', group: 'PO800496' },
+    { name: 'Europe Écologie Les Verts', slug: 'europe-ecologie-les-verts', group: 'PO800526' },
+    { name: 'Parti Communiste Français', slug: 'parti-communiste-francais', group: 'PO800502' },
+    { name: 'Reconquête', slug: 'reconquete', group: 'PO800532' },
+    { name: 'Place Publique', slug: 'place-publique', group: 'PO800496' },
+    { name: 'Union des Droites pour la République', slug: 'union-des-droites-pour-la-republique', group: 'PO800484' },
   ]
 
   useEffect(() => {
@@ -178,14 +201,53 @@ export default function PartyPage() {
 
       {comparisons.length > 0 && (
         <section>
+          {allThemes.length > 0 && (
+            <div style={{ marginBottom: '2rem' }}>
+              <p style={{ fontSize: '0.9rem', fontWeight: '600', color: secondaryText, marginBottom: '0.75rem' }}>
+                Filtrer par thèmes:
+              </p>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {allThemes.map(theme => (
+                  <button
+                    key={theme}
+                    onClick={() => toggleTheme(theme)}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      borderRadius: '20px',
+                      border: selectedThemes.includes(theme) ? '2px solid #3b82f6' : `1px solid ${cardBorder}`,
+                      background: selectedThemes.includes(theme) ? '#3b82f6' : 'transparent',
+                      color: selectedThemes.includes(theme) ? 'white' : textColor,
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                      fontWeight: '500',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!selectedThemes.includes(theme)) {
+                        e.target.style.background = darkMode ? '#374151' : '#e5e7eb'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!selectedThemes.includes(theme)) {
+                        e.target.style.background = 'transparent'
+                      }
+                    }}
+                  >
+                    {theme}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <h2 style={{ color: textColor, fontSize: '1.5rem', fontWeight: '600', marginBottom: '1.5rem' }}>
-            {t.comparativeAnalysis} ({displayedCount}/{comparisons.length})
+            {t.comparativeAnalysis} ({displayedCount}/{filteredComparisons.length})
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.5rem' }}>
-            {comparisons.slice(0, displayedCount).map((item, index) => (
+            {filteredComparisons.slice(0, displayedCount).map((item, index) => (
               <div
                 key={index}
-                onClick={() => router.push(`/party/${slug}/proposal/${index}`)}
+                onClick={() => router.push(`/parti/${slug}/proposal/${index}`)}
 
                 style={{
                   background: cardBg,
@@ -232,7 +294,7 @@ export default function PartyPage() {
                       {statusLabel(item.status).toUpperCase()}
                     </span>
                     <span style={{ fontSize: '0.75rem', color: secondaryText, fontWeight: '500' }}>
-                      {item.relatedVotes?.length ?? 0} votes liés
+                      {item.relatedVotesCount ?? 0} votes liés
                     </span>
                   </div>
 

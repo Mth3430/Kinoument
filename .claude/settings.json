@@ -2,7 +2,38 @@
   "permissions": {
     "allow": [
       "Bash(curl -s \"http://localhost:3000/api/comparisons?slug=renaissance\")",
-      "Bash(sort -k2)"
+      "Bash(sort -k2)",
+      "Bash(wait)",
+      "PowerShell(Get-Process node -ErrorAction SilentlyContinue)",
+      "PowerShell(Stop-Process -Force -ErrorAction SilentlyContinue)",
+      "PowerShell(\"Process stopped\")",
+      "PowerShell(\"Stopped\")",
+      "Read(//home/**)",
+      "Bash(node test-amendments-16.js)",
+      "Bash(node check-amendment-structure.js)",
+      "Bash(node diagnostic-amendments.js)",
+      "Bash(timeout 600 node check-amendment-content.js)",
+      "Bash(timeout 600 node check-amendment-mapping.js)",
+      "Bash(node -e ' *)",
+      "Bash(timeout 600 node check-amendment-113.js)",
+      "Bash(timeout 600 node find-amendment-113.js)",
+      "PowerShell(\"Ready\")",
+      "Bash(curl -s http://localhost:11434/api/tags)",
+      "PowerShell(\"Ready to restart\")",
+      "Bash(npm run dev > /tmp/server.log 2>&1 & *)",
+      "PowerShell(\"Restarting...\")",
+      "Bash(git mv *)",
+      "WebFetch(domain:tous-les-programmes.fr)",
+      "Bash(node analyze-group-codes.js)",
+      "Bash(node analyze-group-names.js)",
+      "Bash(node fetch-group-names.js)",
+      "Bash(node find-groups.js)",
+      "WebFetch(domain:www2.assemblee-nationale.fr)",
+      "Bash(curl -s \"https://www.assemblee-nationale.fr/dyn/org/PO800490\" -I)",
+      "Bash(curl -s https://www.assemblee-nationale.fr/dyn/org/__TRACKED_VAR__ -I)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
     ]
   }
 }

@@ -2,27 +2,23 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useRef, useState } from 'react'
 
 const PARTIES = [
-  { name: 'Renaissance', slug: 'renaissance' },
-  { name: 'Les Républicains', slug: 'les-republicains' },
-  { name: 'La France Insoumise', slug: 'la-france-insoumise' },
-  { name: 'Rassemblement National', slug: 'rassemblement-national' },
-  { name: 'Parti Socialiste', slug: 'parti-socialiste' },
-  { name: 'EELV', slug: 'europe-ecologie-les-verts' },
-  { name: 'Parti Communiste', slug: 'parti-communiste-francais' },
-  { name: 'Reconquête', slug: 'reconquete' },
-  { name: 'Place Publique', slug: 'place-publique' },
+  { name: 'Renaissance', slug: 'renaissance', group: 'PO800538' },
+  { name: 'Les Républicains', slug: 'les-republicains', group: 'PO800508' },
+  { name: 'La France Insoumise', slug: 'la-france-insoumise', group: 'PO800490' },
+  { name: 'Rassemblement National', slug: 'rassemblement-national', group: 'PO800520' },
+  { name: 'Parti Socialiste', slug: 'parti-socialiste', group: 'PO800496' },
+  { name: 'EELV', slug: 'europe-ecologie-les-verts', group: 'PO800526' },
+  { name: 'Parti Communiste', slug: 'parti-communiste-francais', group: 'PO800502' },
+  { name: 'Reconquête', slug: 'reconquete', group: 'PO800532' },
+  { name: 'Place Publique', slug: 'place-publique', group: 'PO800496' },
+  { name: 'UDR', slug: 'union-des-droites-pour-la-republique', group: 'PO800484' },
 ]
 
 export default function Navigation({ darkMode, onDarkModeChange, language, onLanguageChange }) {
   const pathname = usePathname()
-  const currentSlug = pathname?.includes('/party/') ? pathname.split('/party/')[1]?.split('?')[0] : null
-  const scrollContainerRef = useRef(null)
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragStart, setDragStart] = useState(0)
-  const [scrollStart, setScrollStart] = useState(0)
+  const currentSlug = pathname?.includes('/parti/') ? pathname.split('/parti/')[1]?.split('?')[0]?.split('/')[0] : null
 
   const bgColor = darkMode ? '#1f2937' : '#f3f4f6'
   const textColor = darkMode ? '#f3f4f6' : '#1f2937'
@@ -31,22 +27,6 @@ export default function Navigation({ darkMode, onDarkModeChange, language, onLan
   const activeBg = '#3b82f6'
   const buttonBg = darkMode ? '#374151' : '#e5e7eb'
   const buttonActiveBg = '#3b82f6'
-
-  const handleMouseDown = (e) => {
-    setIsDragging(true)
-    setDragStart(e.clientX)
-    setScrollStart(scrollContainerRef.current.scrollLeft)
-  }
-
-  const handleMouseMove = (e) => {
-    if (!isDragging) return
-    const distance = e.clientX - dragStart
-    scrollContainerRef.current.scrollLeft = scrollStart - distance
-  }
-
-  const handleMouseUp = () => {
-    setIsDragging(false)
-  }
 
   return (
     <nav style={{
@@ -86,18 +66,12 @@ export default function Navigation({ darkMode, onDarkModeChange, language, onLan
       <div style={{ width: '1px', height: '1.5rem', background: borderColor, margin: '0 0.25rem' }} />
 
       <div
-        ref={scrollContainerRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
         style={{
           display: 'flex',
           gap: '0.5rem',
           overflowX: 'auto',
           flex: 1,
           scrollBehavior: 'smooth',
-          cursor: isDragging ? 'grabbing' : 'grab',
           paddingRight: '0.5rem',
           WebkitOverflowScrolling: 'touch',
           scrollbarWidth: 'none',
@@ -106,7 +80,7 @@ export default function Navigation({ darkMode, onDarkModeChange, language, onLan
         {PARTIES.map((party) => {
           const isActive = currentSlug === party.slug
           return (
-            <Link key={party.slug} href={`/party/${party.slug}`} style={{ pointerEvents: isDragging ? 'none' : 'auto' }}>
+            <Link key={party.slug} href={`/parti/${party.slug}`}>
               <button style={{
                 padding: '0.5rem 0.875rem',
                 background: isActive ? activeBg : 'transparent',
@@ -120,7 +94,7 @@ export default function Navigation({ darkMode, onDarkModeChange, language, onLan
                 transition: 'all 0.2s',
               }}
               onMouseEnter={(e) => {
-                if (!isActive && !isDragging) e.target.style.background = hoverBg
+                if (!isActive) e.target.style.background = hoverBg
               }}
               onMouseLeave={(e) => {
                 if (!isActive) e.target.style.background = 'transparent'

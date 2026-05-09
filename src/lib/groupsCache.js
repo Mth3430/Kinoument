@@ -1,22 +1,21 @@
 import { unzipSync } from 'fflate'
 
-const ORGANES_URL = 'https://data.assemblee-nationale.fr/static/openData/repository/17/organe/Organes.json.zip'
+const ORGANES_URL = 'https://data.assemblee-nationale.fr/static/openData/repository/16/organe/Organes.json.zip'
 const CACHE_TTL = 60 * 60 * 1000
 
-// Fallback: known 17th legislature parliamentary groups
+// Fallback: known 16th legislature parliamentary groups
 const FALLBACK_GROUPS = new Map([
-  ['PO845401', 'Rassemblement National'],
-  ['PO845407', 'Ensemble pour la République'],
-  ['PO845413', 'La France Insoumise'],
-  ['PO845419', 'Socialistes et apparentés'],
-  ['PO845425', 'Droite Républicaine'],
-  ['PO845439', 'Écologistes et Social'],
-  ['PO845454', 'Horizons & indépendants'],
-  ['PO845470', 'Démocrates (MoDem)'],
-  ['PO845485', 'LIOT'],
-  ['PO845514', 'Gauche Démocrate et Républicaine'],
-  ['PO847173', 'Reconquête'],
-  ['PO872880', 'UDR'],
+  ['PO800490', 'La République En Marche'],
+  ['PO800496', 'Mouvement Démocrate (MODEM)'],
+  ['PO800526', 'Agir ensemble'],
+  ['PO800502', 'Les Républicains'],
+  ['PO800532', 'Nouvelle Gauche'],
+  ['PO793087', 'Socialistes et apparentés'],
+  ['PO800538', 'La France Insoumise'],
+  ['PO800520', 'Rassemblement National'],
+  ['PO800508', 'Constructif, Libéral, Progressiste'],
+  ['PO800484', 'Gauche Démocrate & Républicaine'],
+  ['PO800514', 'Libertés et Territoires'],
   ['PO840056', 'Non-inscrits'],
 ])
 

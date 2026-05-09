@@ -49,7 +49,7 @@ export default function PollChart({ darkMode }) {
   }
 
   const handlePartyClick = (slug) => {
-    router.push(`/party/${slug}`)
+    router.push(`/parti/${slug}`)
   }
 
   const openPollSource = (sourceName) => {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 
-export default function DisclaimerPopup({ darkMode }) {
+export default function DisclaimerPopup({ darkMode, onShowDisclaimer }) {
   const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
@@ -12,6 +12,13 @@ export default function DisclaimerPopup({ darkMode }) {
       setIsOpen(true)
     }
   }, [])
+
+  // Exposer la méthode pour réafficher la popup
+  useEffect(() => {
+    if (onShowDisclaimer) {
+      onShowDisclaimer(() => setIsOpen(true))
+    }
+  }, [onShowDisclaimer])
 
   const handleClose = () => {
     setIsOpen(false)
@@ -38,6 +45,7 @@ export default function DisclaimerPopup({ darkMode }) {
       justifyContent: 'center',
       zIndex: 1000,
       padding: '1rem',
+      fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
     }}>
       <div style={{
         background: bgColor,
@@ -46,6 +54,7 @@ export default function DisclaimerPopup({ darkMode }) {
         maxWidth: '600px',
         boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
         border: `2px solid ${accentColor}`,
+        fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
           <span style={{ fontSize: '2rem', marginRight: '1rem' }}>⚠️</span>

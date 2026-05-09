@@ -1,6 +1,6 @@
 import { unzipSync } from 'fflate'
 
-const VOTES_URL = 'https://data.assemblee-nationale.fr/static/openData/repository/17/loi/scrutins/Scrutins.json.zip'
+const VOTES_URL = 'https://data.assemblee-nationale.fr/static/openData/repository/16/loi/scrutins/Scrutins.json.zip'
 const CACHE_TTL = 10 * 60 * 1000
 
 let cache = null
@@ -21,6 +21,7 @@ export async function getVotes() {
 
   let totalParsed = 0
   let totalFiltered = 0
+  let amendmentsFound = 0
 
   for (const fileName of fileNames) {
     const text = new TextDecoder().decode(archive[fileName])
@@ -44,7 +45,11 @@ export async function getVotes() {
         positionMajoritaire: g.vote?.positionMajoritaire || null,
       }))
       const titre = scrutin.titre || scrutin.titreScrutin || ''
-      const amendMatch = titre.match(/amendement\s+n°\s*(\w+)/i)
+      // Match various amendment number formats: "n° 281", "n° 281", "NO 281", "n°281", etc.
+      const amendMatch = titre.match(/(?:l'amendement|amendement|l'am(?:end\.?)?)\s+(?:no\.|n°|n\.)\s*(\d+)/i)
+      const amendementNumero = amendMatch ? amendMatch[1] : null
+      if (amendementNumero) amendmentsFound++
+
       votes.push({
         numero: scrutin.numero || '',
         titre,
@@ -52,13 +57,14 @@ export async function getVotes() {
         exposeSommaire: scrutin.exposeSommaire || scrutin.exposeSommaireTexte || '',
         sort: scrutin.sort?.libelle || '',
         date: voteDate,
-        amendementNumero: amendMatch ? amendMatch[1] : null,
+        amendementNumero,
         groupes,
       })
     }
   }
 
   console.log(`[votesCache] Chargé ${votes.length} votes (${totalParsed} total, ${totalFiltered} filtrés avant 2022)`)
+  console.log(`[votesCache] ${amendmentsFound} votes avec numéro d'amendement trouvés`)
   cache = votes
   cacheTime = Date.now()
   return votes

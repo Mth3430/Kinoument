@@ -10,6 +10,7 @@ export default function Home() {
   const [language, setLanguage] = useState('fr')
   const [darkMode, setDarkMode] = useState(true)
   const [partiesStatus, setPartiesStatus] = useState([])
+  const [showDisclaimer, setShowDisclaimer] = useState(null)
   const pollingRef = useRef(null)
 
   const translations = {
@@ -42,15 +43,16 @@ export default function Home() {
   const t = translations[language]
 
   const parties = [
-    { name: 'Renaissance', slug: 'renaissance', group: 'PO845401', description: language === 'fr' ? 'Renaissance est le parti d\'Emmanuel Macron, axé sur des politiques centristes, l\'intégration européenne et la modernisation économique.' : 'Renaissance is the party of Emmanuel Macron, focusing on centrist policies, European integration, and economic modernization.' },
-    { name: 'Les Républicains', slug: 'les-republicains', group: 'PO845407', description: language === 'fr' ? 'Les Républicains est un parti de centre-droit défendant les valeurs traditionnelles, le libéralisme économique et une défense nationale forte.' : 'Les Républicains is a center-right party advocating for traditional values, economic liberalism, and strong national defense.' },
-    { name: 'La France Insoumise', slug: 'la-france-insoumise', group: 'PO845413', description: language === 'fr' ? 'La France Insoumise est un parti populiste de gauche dirigé par Jean-Luc Mélenchon, promouvant la justice sociale, l\'environnementalisme et l\'anti-capitalisme.' : 'La France Insoumise is a left-wing populist party led by Jean-Luc Mélenchon, promoting social justice, environmentalism, and anti-capitalism.' },
-    { name: 'Rassemblement National', slug: 'rassemblement-national', group: 'PO845419', description: language === 'fr' ? 'Rassemblement National, anciennement Front National, est un parti d\'extrême droite mettant l\'accent sur la souveraineté nationale, le contrôle de l\'immigration et l\'euroscepticisme.' : 'Rassemblement National, formerly National Front, is a far-right party emphasizing national sovereignty, immigration control, and Euroscepticism.' },
-    { name: 'Parti Socialiste', slug: 'parti-socialiste', group: 'PO845425', description: language === 'fr' ? 'Parti Socialiste est un parti social-démocrate de centre-gauche engagé pour le bien-être social, les droits des travailleurs et les réformes progressistes.' : 'Parti Socialiste is a center-left social democratic party committed to social welfare, labor rights, and progressive reforms.' },
-    { name: 'Europe Écologie Les Verts', slug: 'europe-ecologie-les-verts', group: 'PO845439', description: language === 'fr' ? 'Europe Écologie Les Verts est un parti écologiste dédié à la transition écologique, au développement durable et aux politiques vertes.' : 'Europe Écologie Les Verts is an environmentalist party dedicated to ecological transition, sustainable development, and green policies.' },
-    { name: 'Parti Communiste Français', slug: 'parti-communiste-francais', group: 'PO845454', description: language === 'fr' ? 'Parti Communiste Français est un parti communiste défendant les droits des travailleurs, l\'anti-impérialisme et la transformation socialiste.' : 'Parti Communiste Français is a communist party advocating for workers\' rights, anti-imperialism, and socialist transformation.' },
-    { name: 'Reconquête', slug: 'reconquete', group: 'PO845470', description: language === 'fr' ? 'Reconquête est un parti populiste de droite dirigé par Éric Zemmour, axé sur l\'identité nationale, l\'anti-immigration et la souveraineté française.' : 'Reconquête is a right-wing populist party led by Éric Zemmour, focusing on national identity, anti-immigration, and French sovereignty.' },
-    { name: 'Place Publique', slug: 'place-publique', group: 'PO845485', description: language === 'fr' ? 'Place Publique est un parti progressiste promouvant la participation citoyenne, la justice sociale et le renouvellement démocratique.' : 'Place Publique is a progressive party promoting citizen participation, social justice, and democratic renewal.' },
+    { name: 'Renaissance', slug: 'renaissance', group: 'PO800538', description: language === 'fr' ? 'Renaissance est le parti d\'Emmanuel Macron, axé sur des politiques centristes, l\'intégration européenne et la modernisation économique.' : 'Renaissance is the party of Emmanuel Macron, focusing on centrist policies, European integration, and economic modernization.' },
+    { name: 'Les Républicains', slug: 'les-republicains', group: 'PO800508', description: language === 'fr' ? 'Les Républicains est un parti de centre-droit défendant les valeurs traditionnelles, le libéralisme économique et une défense nationale forte.' : 'Les Républicains is a center-right party advocating for traditional values, economic liberalism, and strong national defense.' },
+    { name: 'La France Insoumise', slug: 'la-france-insoumise', group: 'PO800490', description: language === 'fr' ? 'La France Insoumise est un parti populiste de gauche dirigé par Jean-Luc Mélenchon, promouvant la justice sociale, l\'environnementalisme et l\'anti-capitalisme.' : 'La France Insoumise is a left-wing populist party led by Jean-Luc Mélenchon, promoting social justice, environmentalism, and anti-capitalism.' },
+    { name: 'Rassemblement National', slug: 'rassemblement-national', group: 'PO800520', description: language === 'fr' ? 'Rassemblement National, anciennement Front National, est un parti d\'extrême droite mettant l\'accent sur la souveraineté nationale, le contrôle de l\'immigration et l\'euroscepticisme.' : 'Rassemblement National, formerly National Front, is a far-right party emphasizing national sovereignty, immigration control, and Euroscepticism.' },
+    { name: 'Parti Socialiste', slug: 'parti-socialiste', group: 'PO800496', description: language === 'fr' ? 'Parti Socialiste est un parti social-démocrate de centre-gauche engagé pour le bien-être social, les droits des travailleurs et les réformes progressistes.' : 'Parti Socialiste is a center-left social democratic party committed to social welfare, labor rights, and progressive reforms.' },
+    { name: 'Europe Écologie Les Verts', slug: 'europe-ecologie-les-verts', group: 'PO800526', description: language === 'fr' ? 'Europe Écologie Les Verts est un parti écologiste dédié à la transition écologique, au développement durable et aux politiques vertes.' : 'Europe Écologie Les Verts is an environmentalist party dedicated to ecological transition, sustainable development, and green policies.' },
+    { name: 'Parti Communiste Français', slug: 'parti-communiste-francais', group: 'PO800502', description: language === 'fr' ? 'Parti Communiste Français est un parti communiste défendant les droits des travailleurs, l\'anti-impérialisme et la transformation socialiste.' : 'Parti Communiste Français is a communist party advocating for workers\' rights, anti-imperialism, and socialist transformation.' },
+    { name: 'Reconquête', slug: 'reconquete', group: 'PO800532', description: language === 'fr' ? 'Reconquête est un parti populiste de droite dirigé par Éric Zemmour, axé sur l\'identité nationale, l\'anti-immigration et la souveraineté française.' : 'Reconquête is a right-wing populist party led by Éric Zemmour, focusing on national identity, anti-immigration, and French sovereignty.' },
+    { name: 'Place Publique', slug: 'place-publique', group: 'PO800496', description: language === 'fr' ? 'Place Publique est un parti progressiste promouvant la participation citoyenne, la justice sociale et le renouvellement démocratique.' : 'Place Publique is a progressive party promoting citizen participation, social justice, and democratic renewal.' },
+    { name: 'Union des Droites pour la République', slug: 'union-des-droites-pour-la-republique', group: 'PO800484', description: language === 'fr' ? 'Union des Droites pour la République est un regroupement de partis de droite visant à créer une alternative aux partis établis.' : 'Union des Droites pour la République is a coalition of right-wing parties aiming to create an alternative to established parties.' },
   ]
 
   useEffect(() => {
@@ -98,7 +100,7 @@ export default function Home() {
 
   return (
     <>
-      <DisclaimerPopup darkMode={darkMode} />
+      <DisclaimerPopup darkMode={darkMode} onShowDisclaimer={setShowDisclaimer} />
       <Navigation
         darkMode={darkMode}
         onDarkModeChange={setDarkMode}
@@ -205,7 +207,7 @@ export default function Home() {
               <p style={{ color: secondaryText, fontSize: '0.95rem', lineHeight: '1.5', marginBottom: '1rem' }}>
                 {party.description}
               </p>
-              <Link href={`/party/${party.slug}?lang=${language}`}>
+              <Link href={`/parti/${party.slug}?lang=${language}`}>
                 <button style={{
                   padding: '0.75rem 1.5rem',
                   background: '#3b82f6',
@@ -234,9 +236,30 @@ export default function Home() {
         border: `1px solid ${cardBorder}`,
         borderRadius: '8px',
       }}>
-        <h2 style={{ color: textColor, fontSize: '1.5rem', fontWeight: '600', marginBottom: '1.5rem' }}>
-          Comment ça marche ?
-        </h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h2 style={{ color: textColor, fontSize: '1.5rem', fontWeight: '600', margin: 0 }}>
+            Comment ça marche ?
+          </h2>
+          {showDisclaimer && (
+            <button
+              onClick={() => showDisclaimer()}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#ef4444',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                fontWeight: '500',
+              }}
+              onMouseEnter={(e) => e.target.style.background = '#dc2626'}
+              onMouseLeave={(e) => e.target.style.background = '#ef4444'}
+            >
+              ⚠️ Voir l'avis de neutralité
+            </button>
+          )}
+        </div>
 
         <div style={{
           display: 'grid',

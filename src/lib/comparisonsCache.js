@@ -4,15 +4,16 @@ import { loadFromDisk, saveToDisk } from './diskCache'
 import { getVotes } from './votesCache'
 
 const PARTIES = [
-  { name: 'Renaissance', slug: 'renaissance', group: 'PO845407' },
-  { name: 'Les Républicains', slug: 'les-republicains', group: 'PO845425' },
-  { name: 'La France Insoumise', slug: 'la-france-insoumise', group: 'PO845413' },
-  { name: 'Rassemblement National', slug: 'rassemblement-national', group: 'PO845401' },
-  { name: 'Parti Socialiste', slug: 'parti-socialiste', group: 'PO845419' },
-  { name: 'Europe Écologie Les Verts', slug: 'europe-ecologie-les-verts', group: 'PO845439' },
-  { name: 'Parti Communiste Français', slug: 'parti-communiste-francais', group: 'PO845514' },
-  { name: 'Reconquête', slug: 'reconquete', group: 'PO847173' },
-  { name: 'Place Publique', slug: 'place-publique', group: 'PO845454' },
+  { name: 'Renaissance', slug: 'renaissance', group: 'PO800538' },
+  { name: 'Les Républicains', slug: 'les-republicains', group: 'PO800508' },
+  { name: 'La France Insoumise', slug: 'la-france-insoumise', group: 'PO800490' },
+  { name: 'Rassemblement National', slug: 'rassemblement-national', group: 'PO800520' },
+  { name: 'Parti Socialiste', slug: 'parti-socialiste', group: 'PO800496' },
+  { name: 'Europe Écologie Les Verts', slug: 'europe-ecologie-les-verts', group: 'PO800526' },
+  { name: 'Parti Communiste Français', slug: 'parti-communiste-francais', group: 'PO800502' },
+  { name: 'Reconquête', slug: 'reconquete', group: 'PO800532' },
+  { name: 'Place Publique', slug: 'place-publique', group: 'PO800496' },
+  { name: 'Union des Droites pour la République', slug: 'union-des-droites-pour-la-republique', group: 'PO800484' },
 ]
 
 // global persiste entre les re-évaluations de modules par Next.js
@@ -186,30 +187,48 @@ async function checkForUpdates(party, diskData) {
 
   const comparisons = [...(cache.get(party.slug)?.comparisons || diskData.comparisons)]
 
-  // Traite les nouvelles propositions
-  for (const proposal of newProposals) {
-    try {
-      const result = await compareProposal(proposal, party.group)
-      comparisons.push({ proposal, ...result })
-    } catch (e) {
-      console.warn(`[preload] ${party.name} nouvelle proposition échouée:`, e.message)
-      comparisons.push({ proposal, status: 'unknown', relatedVotes: [], usedOllama: false })
-    }
+  // Traite les nouvelles propositions en parallèle
+  const BATCH_SIZE = 15
+  for (let i = 0; i < newProposals.length; i += BATCH_SIZE) {
+    const batch = newProposals.slice(i, i + BATCH_SIZE)
+    const batchResults = await Promise.allSettled(
+      batch.map((prop) => compareProposal(prop, party.group))
+    )
+
+    batchResults.forEach((result, idx) => {
+      const proposal = batch[idx]
+      if (result.status === 'fulfilled') {
+        comparisons.push({ proposal, ...result.value })
+      } else {
+        console.warn(`[preload] ${party.name} nouvelle proposition échouée:`, result.reason?.message)
+        comparisons.push({ proposal, status: 'unknown', relatedVotes: [], usedOllama: false })
+      }
+    })
+
     cache.set(party.slug, { status: 'ready', comparisons: [...comparisons], progress: comparisons.length, total: comparisons.length })
   }
 
-  // Si de nouveaux votes sont disponibles, re-analyse les propositions sans résultat
+  // Si de nouveaux votes sont disponibles, re-analyse les propositions sans résultat en parallèle
   if (hasNewVotes) {
     const unknownIndices = comparisons
       .map((c, i) => (c.status === 'unknown' ? i : -1))
       .filter((i) => i >= 0)
     console.log(`[preload] ${party.name} : re-analyse de ${unknownIndices.length} propositions sans correspondance`)
-    for (const idx of unknownIndices) {
-      try {
-        const result = await compareProposal(comparisons[idx].proposal, party.group)
-        comparisons[idx] = { ...comparisons[idx], ...result }
-        cache.set(party.slug, { status: 'ready', comparisons: [...comparisons], progress: comparisons.length, total: comparisons.length })
-      } catch {}
+
+    for (let i = 0; i < unknownIndices.length; i += BATCH_SIZE) {
+      const batchIndices = unknownIndices.slice(i, i + BATCH_SIZE)
+      const batchResults = await Promise.allSettled(
+        batchIndices.map((idx) => compareProposal(comparisons[idx].proposal, party.group))
+      )
+
+      batchResults.forEach((result, idx) => {
+        const comparisonsIdx = batchIndices[idx]
+        if (result.status === 'fulfilled') {
+          comparisons[comparisonsIdx] = { ...comparisons[comparisonsIdx], ...result.value }
+        }
+      })
+
+      cache.set(party.slug, { status: 'ready', comparisons: [...comparisons], progress: comparisons.length, total: comparisons.length })
     }
   }
 
@@ -227,17 +246,28 @@ async function fullPreloadParty(party) {
     cache.set(party.slug, { status: 'loading', comparisons: [], progress: 0, total: proposals.length })
 
     const comparisons = []
-    for (let i = 0; i < proposals.length; i++) {
-      try {
-        const result = await compareProposal(proposals[i], party.group)
-        const voteCount = result.relatedVotes?.length || 0
-        console.log(`[preload] ${party.name} [${i + 1}/${proposals.length}] "${proposals[i].title}": ${voteCount} votes liés`)
-        comparisons.push({ proposal: proposals[i], ...result })
-      } catch (e) {
-        console.warn(`[preload] ${party.name} proposition ${i + 1} échouée:`, e.message)
-        comparisons.push({ proposal: proposals[i], status: 'unknown', relatedVotes: [], usedOllama: false })
-      }
-      cache.set(party.slug, { status: 'loading', comparisons: [...comparisons], progress: i + 1, total: proposals.length })
+    const BATCH_SIZE = 15
+
+    for (let i = 0; i < proposals.length; i += BATCH_SIZE) {
+      const batch = proposals.slice(i, i + BATCH_SIZE)
+      const batchResults = await Promise.allSettled(
+        batch.map((prop) => compareProposal(prop, party.group))
+      )
+
+      batchResults.forEach((result, idx) => {
+        const propIdx = i + idx
+        const proposal = proposals[propIdx]
+        if (result.status === 'fulfilled') {
+          const voteCount = result.value.relatedVotes?.length || 0
+          console.log(`[preload] ${party.name} [${propIdx + 1}/${proposals.length}] "${proposal.title}": ${voteCount} votes liés`)
+          comparisons.push({ proposal, ...result.value })
+        } else {
+          console.warn(`[preload] ${party.name} proposition ${propIdx + 1} échouée:`, result.reason?.message)
+          comparisons.push({ proposal, status: 'unknown', relatedVotes: [], usedOllama: false })
+        }
+      })
+
+      cache.set(party.slug, { status: 'loading', comparisons: [...comparisons], progress: Math.min(i + BATCH_SIZE, proposals.length), total: proposals.length })
     }
 
     cache.set(party.slug, { status: 'ready', comparisons, progress: proposals.length, total: proposals.length })
@@ -279,8 +309,13 @@ export async function preloadAllParties() {
   if (global._preloadStarted) return
   global._preloadStarted = true
   console.log('[preload] Démarrage...')
-  for (const party of PARTIES) {
-    await preloadParty(party)
+
+  const results = await Promise.allSettled(PARTIES.map(party => preloadParty(party)))
+
+  const failed = results.filter((r) => r.status === 'rejected')
+  if (failed.length > 0) {
+    console.warn(`[preload] ${failed.length}/${PARTIES.length} partis ont échoué`)
+  } else {
+    console.log('[preload] Toutes les analyses terminées (ou chargées depuis le cache)')
   }
-  console.log('[preload] Toutes les analyses terminées (ou chargées depuis le cache)')
 }

@@ -54,11 +54,9 @@ export default function ProposalDetailPage() {
   useEffect(() => {
     const fetchProposal = async () => {
       try {
-        const res = await fetch(`/api/comparisons?slug=${slug}`)
+        const res = await fetch(`/api/proposal?slug=${slug}&index=${proposalIndex}`)
         const data = await res.json()
-        if (data.comparisons && data.comparisons[proposalIndex]) {
-          setProposal(data.comparisons[proposalIndex])
-        }
+        setProposal(data)
       } catch (error) {
         console.error('Erreur:', error)
       } finally {
@@ -279,6 +277,26 @@ export default function ProposalDetailPage() {
                     <h3 style={{ color: textColor, margin: '0 0 0.75rem 0', fontSize: '1.05rem', fontWeight: '600' }}>
                       {vote.titre}
                     </h3>
+                    {(vote.amendmentNumber || vote.amendementNumero) && (
+                      <div style={{
+                        marginTop: '0.5rem',
+                        padding: '0.75rem',
+                        background: darkMode ? '#111827' : '#f0f9ff',
+                        border: `1px solid ${darkMode ? '#374151' : '#bfdbfe'}`,
+                        borderRadius: '6px',
+                        fontSize: '0.85rem',
+                      }}>
+                        <p style={{ color: '#60a5fa', fontWeight: '500', margin: '0 0 0.5rem 0' }}>
+                          🔗 Amendement n° {vote.amendmentNumber || vote.amendementNumero}
+                        </p>
+                        {vote.amendmentDescription && (
+                          <p style={{ color: secondaryText, margin: '0.5rem 0', lineHeight: '1.4' }}>
+                            {vote.amendmentDescription.substring(0, 400)}
+                            {vote.amendmentDescription.length > 400 ? '…' : ''}
+                          </p>
+                        )}
+                      </div>
+                    )}
                     {(vote.objet || vote.exposeSommaire) && (
                       <button
                         onClick={() => setExpandedVote(i)}
@@ -294,7 +312,7 @@ export default function ProposalDetailPage() {
                           fontWeight: '500',
                         }}
                       >
-                        📄 Voir la description
+                        📄 Voir la description du vote
                       </button>
                     )}
                     {vote.exposeSommaire && (
@@ -353,7 +371,7 @@ export default function ProposalDetailPage() {
                 background: cardBg,
                 borderRadius: '12px',
                 padding: '2rem',
-                maxWidth: '700px',
+                maxWidth: '800px',
                 maxHeight: '80vh',
                 overflow: 'auto',
                 color: textColor,
@@ -361,9 +379,35 @@ export default function ProposalDetailPage() {
                 <h2 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1.3rem', fontWeight: '600' }}>
                   {proposal.relatedVotes[expandedVote].titre}
                 </h2>
-                <p style={{ color: secondaryText, fontSize: '0.95rem', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
-                  {proposal.relatedVotes[expandedVote].exposeSommaire || proposal.relatedVotes[expandedVote].objet}
-                </p>
+
+                {(proposal.relatedVotes[expandedVote].amendmentNumber || proposal.relatedVotes[expandedVote].amendementNumero) && (
+                  <div style={{
+                    marginBottom: '1.5rem',
+                    padding: '1rem',
+                    background: darkMode ? '#111827' : '#f0f9ff',
+                    border: `1px solid ${darkMode ? '#374151' : '#bfdbfe'}`,
+                    borderRadius: '8px',
+                  }}>
+                    <p style={{ color: '#60a5fa', fontWeight: '600', margin: '0 0 0.5rem 0' }}>
+                      🔗 Amendement n° {proposal.relatedVotes[expandedVote].amendmentNumber || proposal.relatedVotes[expandedVote].amendementNumero}
+                    </p>
+                    {proposal.relatedVotes[expandedVote].amendmentDescription && (
+                      <p style={{ color: secondaryText, margin: '0.5rem 0', lineHeight: '1.6', whiteSpace: 'pre-wrap', fontSize: '0.95rem' }}>
+                        <strong>Description:</strong> {proposal.relatedVotes[expandedVote].amendmentDescription}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: `1px solid ${cardBorder}` }}>
+                  <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '1rem', fontWeight: '600', color: secondaryText }}>
+                    Description du vote
+                  </h3>
+                  <p style={{ color: secondaryText, fontSize: '0.95rem', lineHeight: '1.6', whiteSpace: 'pre-wrap', margin: 0 }}>
+                    {proposal.relatedVotes[expandedVote].exposeSommaire || proposal.relatedVotes[expandedVote].objet || 'Aucune description disponible'}
+                  </p>
+                </div>
+
                 <button
                   onClick={() => setExpandedVote(null)}
                   style={{
