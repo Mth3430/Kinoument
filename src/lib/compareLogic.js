@@ -115,13 +115,25 @@ async function enrichVotesWithAmendments(matchingVotes) {
     if (vote.amendementNumero) {
       try {
         const amendmentData = await getAmendmentText(vote.amendementNumero)
-        if (amendmentData && (amendmentData.exposeSommaire || amendmentData.dispositif)) {
-          enrichedVote.amendmentDescription = amendmentData.exposeSommaire || amendmentData.dispositif
-          enrichedVote.amendmentAuthor = amendmentData.auteur
+        if (amendmentData) {
+          const description = amendmentData.exposeSommaire || amendmentData.dispositif
+          if (description) {
+            enrichedVote.amendmentDescription = description
+            enrichedVote.amendmentAuthor = amendmentData.auteur
+          } else {
+            // If amendment has no description, use vote title as fallback
+            enrichedVote.amendmentDescription = vote.titre || `Amendement n° ${vote.amendementNumero}`
+          }
+        } else {
+          enrichedVote.amendmentDescription = vote.titre || `Amendement n° ${vote.amendementNumero}`
         }
       } catch (err) {
         // Silent fail - use vote description if amendment not available
+        enrichedVote.amendmentDescription = vote.titre || `Amendement n° ${vote.amendementNumero}`
       }
+    } else {
+      // If no amendment number, use vote title
+      enrichedVote.amendmentDescription = vote.titre || ''
     }
 
     enriched.push(enrichedVote)

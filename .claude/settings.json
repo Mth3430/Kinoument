@@ -44,7 +44,11 @@
       "Bash(curl -s -X POST http://localhost:11434/api/generate -H 'Content-Type: application/json' -d '{\"model\":\"llama3\",\"prompt\":\"test\",\"stream\":false}')",
       "Bash(curl -s \"http://localhost:3006/api/preload-status\")",
       "Bash(timeout 30 curl -s \"http://localhost:3006/api/comparisons?slug=renaissance\")",
-      "Bash(python3 -c \"import sys, json; data=json.load\\(sys.stdin\\); print\\(f\\\\\"Status: {data['status']}\\\\\"\\); comps = data.get\\('comparisons', []\\); print\\(f\\\\\"Total: {len\\(comps\\)}\\\\\"\\); statuses = {}; [statuses.update\\({c.get\\('status'\\): statuses.get\\(c.get\\('status'\\), 0\\) + 1}\\) for c in comps]; print\\(f\\\\\"Analysis results: {statuses}\\\\\"\\)\")"
+      "Bash(python3 -c \"import sys, json; data=json.load\\(sys.stdin\\); print\\(f\\\\\"Status: {data['status']}\\\\\"\\); comps = data.get\\('comparisons', []\\); print\\(f\\\\\"Total: {len\\(comps\\)}\\\\\"\\); statuses = {}; [statuses.update\\({c.get\\('status'\\): statuses.get\\(c.get\\('status'\\), 0\\) + 1}\\) for c in comps]; print\\(f\\\\\"Analysis results: {statuses}\\\\\"\\)\")",
+      "Bash(timeout 30 node test-ollama.js)",
+      "Bash(timeout 60 node test-amendments.js)",
+      "Bash(rm -rf .cache)",
+      "Bash(rm test-ollama.js test-amendments.js)"
     ],
     "additionalDirectories": [
       "\\tmp"
