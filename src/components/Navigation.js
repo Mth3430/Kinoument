@@ -11,9 +11,6 @@ const PARTIES = [
   { name: 'Parti Socialiste', slug: 'parti-socialiste', group: 'PO800496' },
   { name: 'EELV', slug: 'europe-ecologie-les-verts', group: 'PO800526' },
   { name: 'Parti Communiste', slug: 'parti-communiste-francais', group: 'PO800502' },
-  { name: 'Reconquête', slug: 'reconquete', group: 'PO800532' },
-  { name: 'Place Publique', slug: 'place-publique', group: 'PO800496' },
-  { name: 'UDR', slug: 'union-des-droites-pour-la-republique', group: 'PO800484' },
 ]
 
 export default function Navigation({ darkMode, onDarkModeChange, language, onLanguageChange }) {

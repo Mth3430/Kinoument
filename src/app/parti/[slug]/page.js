@@ -83,9 +83,6 @@ export default function PartyPage() {
     { name: 'Parti Socialiste', slug: 'parti-socialiste', group: 'PO800496' },
     { name: 'Europe Écologie Les Verts', slug: 'europe-ecologie-les-verts', group: 'PO800526' },
     { name: 'Parti Communiste Français', slug: 'parti-communiste-francais', group: 'PO800502' },
-    { name: 'Reconquête', slug: 'reconquete', group: 'PO800532' },
-    { name: 'Place Publique', slug: 'place-publique', group: 'PO800496' },
-    { name: 'Union des Droites pour la République', slug: 'union-des-droites-pour-la-republique', group: 'PO800484' },
   ]
 
   useEffect(() => {
