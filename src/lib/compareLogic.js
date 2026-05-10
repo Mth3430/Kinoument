@@ -3,22 +3,36 @@ import { getAmendmentText } from './amendmentsCache'
 import { getGroupsMap } from './groupsCache'
 
 const OLLAMA_URL = 'http://localhost:11434/api/generate'
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3'
+let OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3'
 
-async function ollamaGenerate(prompt, timeout = 45000) {
-  const res = await fetch(OLLAMA_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: OLLAMA_MODEL,
-      prompt,
-      stream: false
-    }),
-    signal: AbortSignal.timeout(timeout),
-  })
-  if (!res.ok) throw new Error('Ollama unavailable')
-  const data = await res.json()
-  return data.response || ''
+async function ollamaGenerate(prompt, timeout = 45000, modelOverride = null) {
+  const model = modelOverride || OLLAMA_MODEL
+  const startTime = Date.now()
+  const requestBody = { model, prompt, stream: false }
+  const bodyStr = JSON.stringify(requestBody)
+
+  try {
+    const res = await fetch(OLLAMA_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: bodyStr,
+      signal: AbortSignal.timeout(timeout),
+    })
+    const elapsed = Date.now() - startTime
+    if (!res.ok) {
+      if (res.status === 404 && !modelOverride) {
+        console.log(`[ollamaGenerate] Model "${model}" not found (404), retrying with llama3...`)
+        return ollamaGenerate(prompt, timeout, 'llama3')
+      }
+      throw new Error(`Ollama unavailable (${res.status})`)
+    }
+    const data = await res.json()
+    return data.response || ''
+  } catch (err) {
+    const elapsed = Date.now() - startTime
+    console.log(`[ollamaGenerate] Error after ${elapsed}ms: ${err.message}`)
+    throw err
+  }
 }
 
 // Extract keywords from proposal
@@ -145,7 +159,7 @@ async function enrichVotesWithAmendments(matchingVotes) {
 // Analyze if an amendment is aligned with the proposal
 async function analyzeAmendmentAlignment(proposalText, amendmentDescription) {
   if (!amendmentDescription || amendmentDescription.length < 5) {
-    console.log(`[analyzeAmendmentAlignment] Description too short: "${amendmentDescription?.substring(0, 30)}"`)
+    console.log(`[analyzeAmendmentAlignment] Description too short (${amendmentDescription?.length || 0} chars): "${amendmentDescription?.substring(0, 50)}"`)
     return null
   }
 
@@ -161,14 +175,11 @@ Cet amendement est-il ALIGNÉ ou CONTRAIRE? Réponds: "aligné" ou "contraire"`
     const response = await ollamaGenerate(prompt, 15000)
     const lower = response.toLowerCase().trim()
     if (lower.includes('aligné')) {
-      console.log(`[analyzeAmendmentAlignment] aligned`)
       return 'aligned'
     }
     if (lower.includes('contraire')) {
-      console.log(`[analyzeAmendmentAlignment] opposed`)
       return 'opposed'
     }
-    console.log(`[analyzeAmendmentAlignment] null - response: "${response.substring(0, 50)}"`)
     return null
   } catch (err) {
     console.log(`[analyzeAmendmentAlignment] Error: ${err.message}`)
