@@ -7,6 +7,7 @@ const MEMORY_CACHE = new Map() // Cache en mémoire des amendements chargés
 let fileIndex = null // Index des noms de fichiers par numéro
 let indexTime = 0
 let cachedArchive = null // Cache l'archive entière en mémoire après first download
+let buildingIndex = null // Promise pour éviter multiple downloads en parallèle
 
 function decodeHtmlEntities(text) {
   if (typeof text !== 'string') return text
@@ -46,45 +47,52 @@ function extractText(val) {
 
 // Build index of filenames to amendment numbers and cache the archive
 async function buildFileIndex() {
+  // Return cached index if still valid
   if (fileIndex && Date.now() - indexTime < CACHE_TTL) return fileIndex
 
-  console.log('[amendmentsCache] Construction de l\'index des fichiers...')
+  // If already building, wait for it to finish instead of downloading again
+  if (buildingIndex) return await buildingIndex
 
-  try {
-    const response = await fetch(AMENDMENTS_URL, { signal: AbortSignal.timeout(600000) })
-    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+  // Start building and cache the promise to prevent parallel downloads
+  buildingIndex = (async () => {
+    try {
+      const response = await fetch(AMENDMENTS_URL, { signal: AbortSignal.timeout(600000) })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
 
-    const arrayBuffer = await response.arrayBuffer()
-    const uint8 = new Uint8Array(arrayBuffer)
-    const archive = unzipSync(uint8)
+      const arrayBuffer = await response.arrayBuffer()
+      const uint8 = new Uint8Array(arrayBuffer)
+      const archive = unzipSync(uint8)
 
-    // Cache the entire archive in memory for subsequent amendment loads
-    cachedArchive = archive
+      // Cache the entire archive in memory for subsequent amendment loads
+      cachedArchive = archive
 
-    const newIndex = new Map()
-    const fileNames = Object.keys(archive).filter((n) => n.toLowerCase().endsWith('.json'))
+      const newIndex = new Map()
+      const fileNames = Object.keys(archive).filter((n) => n.toLowerCase().endsWith('.json'))
 
-    console.log(`[amendmentsCache] ${fileNames.length} fichiers trouvés`)
-
-    // Créer un mapping: numéro → nom de fichier
-    for (const fileName of fileNames) {
-      // Format: .../AMANR5L16PO59047BTC2071P0D1N000029.json
-      // Extraire le numéro à la fin: 000029
-      const match = fileName.match(/N(\d+)\.json$/i)
-      if (match) {
-        const numero = String(parseInt(match[1])) // "000029" → "29"
-        newIndex.set(numero, fileName)
+      // Créer un mapping: numéro → nom de fichier
+      for (const fileName of fileNames) {
+        // Format: .../AMANR5L16PO59047BTC2071P0D1N000029.json
+        // Extraire le numéro à la fin: 000029
+        const match = fileName.match(/N(\d+)\.json$/i)
+        if (match) {
+          const numero = String(parseInt(match[1])) // "000029" → "29"
+          newIndex.set(numero, fileName)
+        }
       }
-    }
 
-    fileIndex = newIndex
-    indexTime = Date.now()
-    console.log(`[amendmentsCache] Index créé: ${newIndex.size} amendements indexés`)
-    return newIndex
-  } catch (err) {
-    console.error('[amendmentsCache] Erreur création index:', err.message)
-    return new Map()
-  }
+      fileIndex = newIndex
+      indexTime = Date.now()
+      return newIndex
+    } catch (err) {
+      console.error('[amendmentsCache] Erreur création index:', err.message)
+      return new Map()
+    } finally {
+      // Clear the building promise so future requests can rebuild if needed
+      buildingIndex = null
+    }
+  })()
+
+  return await buildingIndex
 }
 
 // Load a single amendment file from the ZIP
