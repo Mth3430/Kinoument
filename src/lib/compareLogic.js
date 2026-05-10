@@ -144,7 +144,10 @@ async function enrichVotesWithAmendments(matchingVotes) {
 
 // Analyze if an amendment is aligned with the proposal
 async function analyzeAmendmentAlignment(proposalText, amendmentDescription) {
-  if (!amendmentDescription || amendmentDescription.length < 5) return null
+  if (!amendmentDescription || amendmentDescription.length < 5) {
+    console.log(`[analyzeAmendmentAlignment] Description too short: "${amendmentDescription?.substring(0, 30)}"`)
+    return null
+  }
 
   const prompt = `PROPOSITION DU PARTI:
 "${proposalText}"
@@ -157,10 +160,18 @@ Cet amendement est-il ALIGNÉ ou CONTRAIRE? Réponds: "aligné" ou "contraire"`
   try {
     const response = await ollamaGenerate(prompt, 15000)
     const lower = response.toLowerCase().trim()
-    if (lower.includes('aligné')) return 'aligned'
-    if (lower.includes('contraire')) return 'opposed'
+    if (lower.includes('aligné')) {
+      console.log(`[analyzeAmendmentAlignment] aligned`)
+      return 'aligned'
+    }
+    if (lower.includes('contraire')) {
+      console.log(`[analyzeAmendmentAlignment] opposed`)
+      return 'opposed'
+    }
+    console.log(`[analyzeAmendmentAlignment] null - response: "${response.substring(0, 50)}"`)
     return null
-  } catch {
+  } catch (err) {
+    console.log(`[analyzeAmendmentAlignment] Error: ${err.message}`)
     return null
   }
 }
@@ -240,10 +251,12 @@ Donne une analyse constructive (2-3 phrases) qui explique clairement la cohéren
 // Analyze party consistency based on amendment content alignment
 async function analyzeConsistency(proposal, matchingVotes, partyGroup, groupsMap) {
   if (!matchingVotes || matchingVotes.length === 0) {
+    console.log(`[analyzeConsistency] No matching votes`)
     return { status: 'unknown', explanation: 'Aucun vote correspondant à cette proposition.' }
   }
 
   const proposalText = typeof proposal === 'string' ? proposal : (proposal.text || proposal.title || '')
+  console.log(`[analyzeConsistency] Analyzing ${matchingVotes.length} votes for group ${partyGroup}`)
 
   // Prepare votes for analysis
   const votesToAnalyze = matchingVotes
@@ -254,7 +267,10 @@ async function analyzeConsistency(proposal, matchingVotes, partyGroup, groupsMap
     })
     .filter(Boolean)
 
+  console.log(`[analyzeConsistency] Found ${votesToAnalyze.length} votes with party position for group ${partyGroup}`)
+
   if (votesToAnalyze.length === 0) {
+    console.log(`[analyzeConsistency] No votes found with party position - using aiBasedAnalysis`)
     return aiBasedAnalysis(proposal, matchingVotes)
   }
 
@@ -291,6 +307,7 @@ async function analyzeConsistency(proposal, matchingVotes, partyGroup, groupsMap
   }
 
   if (votesWithAlignment.length === 0) {
+    console.log(`[analyzeConsistency] No votes with alignment - using aiBasedAnalysis`)
     return aiBasedAnalysis(proposal, matchingVotes)
   }
 
@@ -298,6 +315,8 @@ async function analyzeConsistency(proposal, matchingVotes, partyGroup, groupsMap
   const coherent = votesWithAlignment.filter(v => v.isCoherent === true).length
   const incoherent = votesWithAlignment.filter(v => v.isCoherent === false).length
   const unknown = votesWithAlignment.filter(v => v.isCoherent === null).length
+
+  console.log(`[analyzeConsistency] Coherence: ${coherent} coherent, ${incoherent} incoherent, ${unknown} unknown`)
 
   let status = 'unknown'
   let explanation = ''
