@@ -186,7 +186,7 @@ async function checkForUpdates(party, diskData) {
   const comparisons = [...(cache.get(party.slug)?.comparisons || diskData.comparisons)]
 
   // Traite les nouvelles propositions en parallèle
-  const BATCH_SIZE = 15
+  const BATCH_SIZE = 10
   for (let i = 0; i < newProposals.length; i += BATCH_SIZE) {
     const batch = newProposals.slice(i, i + BATCH_SIZE)
     const batchResults = await Promise.allSettled(
@@ -213,8 +213,8 @@ async function checkForUpdates(party, diskData) {
       .filter((i) => i >= 0)
     console.log(`[preload] ${party.name} : re-analyse de ${unknownIndices.length} propositions sans correspondance`)
 
-    for (let i = 0; i < unknownIndices.length; i += BATCH_SIZE) {
-      const batchIndices = unknownIndices.slice(i, i + BATCH_SIZE)
+    for (let i = 0; i < unknownIndices.length; i += 10) {
+      const batchIndices = unknownIndices.slice(i, i + 10)
       const batchResults = await Promise.allSettled(
         batchIndices.map((idx) => compareProposal(comparisons[idx].proposal, party.group))
       )
@@ -244,7 +244,7 @@ async function fullPreloadParty(party) {
     cache.set(party.slug, { status: 'loading', comparisons: [], progress: 0, total: proposals.length })
 
     const comparisons = []
-    const BATCH_SIZE = 15
+    const BATCH_SIZE = 10
 
     for (let i = 0; i < proposals.length; i += BATCH_SIZE) {
       const batch = proposals.slice(i, i + BATCH_SIZE)

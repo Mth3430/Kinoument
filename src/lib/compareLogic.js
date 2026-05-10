@@ -5,7 +5,7 @@ import { getGroupsMap } from './groupsCache'
 const OLLAMA_URL = 'http://localhost:11434/api/generate'
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3'
 
-async function ollamaGenerate(prompt, timeout = 45000) {
+async function ollamaGenerate(prompt, timeout = 120000) {
   const res = await fetch(OLLAMA_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -90,7 +90,7 @@ Sois FLEXIBLE - votes partiellement liés sont OK.
 Réponds avec juste les numéros (ex: 2004 2050) ou "aucun".`
 
     try {
-      const response = await ollamaGenerate(prompt, 15000)
+      const response = await ollamaGenerate(prompt, 30000)
       if (!response.toLowerCase().includes('aucun')) {
         const numbers = [...response.matchAll(/\d+/g)]
           .map(m => parseInt(m[0]))
@@ -145,33 +145,35 @@ async function enrichVotesWithAmendments(matchingVotes) {
 // Analyze if an amendment is aligned with the proposal
 async function analyzeAmendmentAlignment(proposalText, amendmentDescription) {
   if (!amendmentDescription || amendmentDescription.length < 5) {
-    console.log(`[analyzeAmendmentAlignment] Description too short: "${amendmentDescription?.substring(0, 30)}"`)
     return null
   }
 
-  const prompt = `PROPOSITION DU PARTI:
-"${proposalText}"
+  const prompt = `PROPOSITION: "${proposalText}"
 
-AMENDEMENT:
-"${amendmentDescription}"
+AMENDEMENT: "${amendmentDescription}"
 
-Cet amendement est-il ALIGNÉ ou CONTRAIRE? Réponds: "aligné" ou "contraire"`
+Question: Cet amendement SOUTIENT-IL ou S'OPPOSE-T-IL à cette proposition?
+
+Réponds par UN SEUL MOT:
+- Réponds "ALIGNÉ" si l'amendement soutient la proposition
+- Réponds "CONTRAIRE" si l'amendement s'oppose à la proposition`
 
   try {
-    const response = await ollamaGenerate(prompt, 15000)
+    const response = await ollamaGenerate(prompt, 30000)
+    if (!response) return null
     const lower = response.toLowerCase().trim()
-    if (lower.includes('aligné')) {
-      console.log(`[analyzeAmendmentAlignment] aligned`)
+
+    // Check for "aligné" variants (including "aligne" without accent)
+    if (lower.includes('aligné') || lower.includes('aligne') || lower.includes('soutien') || lower.includes('support')) {
       return 'aligned'
     }
-    if (lower.includes('contraire')) {
-      console.log(`[analyzeAmendmentAlignment] opposed`)
+    // Check for "contraire" variants
+    if (lower.includes('contraire') || lower.includes('oppose') || lower.includes('opposition')) {
       return 'opposed'
     }
-    console.log(`[analyzeAmendmentAlignment] null - response: "${response.substring(0, 50)}"`)
     return null
   } catch (err) {
-    console.log(`[analyzeAmendmentAlignment] Error: ${err.message}`)
+    console.log(`[amendment-align] ERROR: ${err.message}`)
     return null
   }
 }
@@ -216,7 +218,7 @@ RÉPONSE:
 Donne une analyse constructive (2-3 phrases) qui explique clairement la cohérence ou l'incohérence entre les amendements et la proposition. Sois direct et analyste.`
 
   try {
-    const response = await ollamaGenerate(prompt, 15000)
+    const response = await ollamaGenerate(prompt, 30000)
     if (response && response.length > 20) {
       // Determine status from AI response
       const lower = response.toLowerCase()
@@ -267,18 +269,15 @@ async function analyzeConsistency(proposal, matchingVotes, partyGroup, groupsMap
     })
     .filter(Boolean)
 
-  console.log(`[analyzeConsistency] Found ${votesToAnalyze.length} votes with party position for group ${partyGroup}`)
-
   if (votesToAnalyze.length === 0) {
-    console.log(`[analyzeConsistency] No votes found with party position - using aiBasedAnalysis`)
     return aiBasedAnalysis(proposal, matchingVotes)
   }
 
   // Analyze votes with amendment descriptions in parallel batches
-  // Limit to 15 votes max for thorough analysis (3s * 15/5 batches ~ 9s)
-  const votesToAnalyzeMax = votesToAnalyze.slice(0, 15)
+  // Limit to 8 votes max for faster analysis with larger batches
+  const votesToAnalyzeMax = votesToAnalyze.slice(0, 8)
   const votesWithAlignment = []
-  const BATCH_SIZE = 5
+  const BATCH_SIZE = 8
 
   for (let i = 0; i < votesToAnalyzeMax.length; i += BATCH_SIZE) {
     const batch = votesToAnalyzeMax.slice(i, i + BATCH_SIZE)
@@ -307,7 +306,7 @@ async function analyzeConsistency(proposal, matchingVotes, partyGroup, groupsMap
   }
 
   if (votesWithAlignment.length === 0) {
-    console.log(`[analyzeConsistency] No votes with alignment - using aiBasedAnalysis`)
+    console.log(`[analyzeConsistency] ${partyGroup} - No alignment results, falling back to aiBasedAnalysis`)
     return aiBasedAnalysis(proposal, matchingVotes)
   }
 
@@ -315,8 +314,6 @@ async function analyzeConsistency(proposal, matchingVotes, partyGroup, groupsMap
   const coherent = votesWithAlignment.filter(v => v.isCoherent === true).length
   const incoherent = votesWithAlignment.filter(v => v.isCoherent === false).length
   const unknown = votesWithAlignment.filter(v => v.isCoherent === null).length
-
-  console.log(`[analyzeConsistency] Coherence: ${coherent} coherent, ${incoherent} incoherent, ${unknown} unknown`)
 
   let status = 'unknown'
   let explanation = ''
