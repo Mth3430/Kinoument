@@ -242,10 +242,12 @@ export default function PartyPage() {
             {t.comparativeAnalysis} ({displayedCount}/{filteredComparisons.length})
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.5rem' }}>
-            {filteredComparisons.slice(0, displayedCount).map((item, index) => (
+            {filteredComparisons.slice(0, displayedCount).map((item) => {
+              const actualIndex = comparisons.findIndex(c => c === item)
+              return (
               <div
-                key={index}
-                onClick={() => router.push(`/parti/${slug}/proposal/${index}`)}
+                key={actualIndex}
+                onClick={() => router.push(`/parti/${slug}/proposal/${actualIndex}`)}
 
                 style={{
                   background: cardBg,
@@ -404,7 +406,8 @@ export default function PartyPage() {
                   </span>
                 </div>
               </div>
-            ))}
+            )})
+            }
           </div>
           <div ref={sentinelRef} style={{ height: '2rem', marginTop: '2rem' }} />
         </section>

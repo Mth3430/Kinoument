@@ -5,8 +5,8 @@ import { getGroupsMap } from './groupsCache'
 const OLLAMA_URL = 'http://localhost:11434/api/generate'
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3'
 
-async function ollamaGenerate(prompt, timeout = 120000) {
-  const res = await fetch(OLLAMA_URL, {
+async function ollamaGenerate(prompt, timeout = null) {
+  const fetchOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -14,31 +14,39 @@ async function ollamaGenerate(prompt, timeout = 120000) {
       prompt,
       stream: false
     }),
-    signal: AbortSignal.timeout(timeout),
-  })
+  }
+
+  // Only add timeout if specified
+  if (timeout !== null) {
+    fetchOptions.signal = AbortSignal.timeout(timeout)
+  }
+
+  const res = await fetch(OLLAMA_URL, fetchOptions)
   if (!res.ok) throw new Error('Ollama unavailable')
   const data = await res.json()
   return data.response || ''
 }
 
-// Extract keywords from proposal
+// Extract keywords from proposal - very strict
 async function extractProposalKeywords(proposalText) {
-  // Quick keyword extraction without AI
-  // Remove common stop words
   const stopWords = new Set([
     'le', 'la', 'les', 'de', 'du', 'des', 'et', 'ou', 'un', 'une', 'à', 'pour', 'par',
     'en', 'au', 'aux', 'avec', 'sans', 'sur', 'sous', 'dans', 'entre', 'vers',
-    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'of', 'to', 'from', 'with'
+    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'of', 'to', 'from', 'with',
+    // Add generic/structural words
+    'article', 'projet', 'loi', 'amendement', 'examen', 'prioritaire', 'disposition',
+    'dispositions', 'texte', 'rapport', 'commission', 'vote', 'votes', 'lassemblee',
+    'assemblee', 'nationale', 'senat', 'chambre', 'lecture', 'premiere', 'deuxieme',
+    'propose', 'proposition', 'cet', 'cette', 'ces', 'celui', 'celle', 'ceux',
+    'est', 'sont', 'stre', 'etre', 'pas', 'plus', 'autre', 'autres'
   ])
 
-  // Extract words
   const words = proposalText
     .toLowerCase()
     .replace(/[^\w\s]/g, ' ')
     .split(/\s+/)
-    .filter(w => w.length > 3 && !stopWords.has(w))
+    .filter(w => w.length > 4 && !stopWords.has(w))
 
-  // Get most common words
   const freq = {}
   words.forEach(w => {
     freq[w] = (freq[w] || 0) + 1
@@ -46,97 +54,138 @@ async function extractProposalKeywords(proposalText) {
 
   const keywords = Object.entries(freq)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
+    .slice(0, 15)
     .map(([word]) => word)
 
   return keywords
 }
 
-// Find matching votes for a proposal - with two strategies
-async function findMatchingVotes(proposalText, allVotes) {
+// NOUVELLE APPROCHE: Find matching votes based on THEMES
+async function findMatchingVotes(proposalText, allVotes, themes = []) {
   if (!allVotes || allVotes.length === 0) return []
 
-  // Strategy 1: Extract keywords and search for relevant votes
-  const keywords = await extractProposalKeywords(proposalText)
-  console.log(`[compareLogic] Keywords: ${keywords.join(', ')}`)
+  // Filter out party names from themes
+  const partyNames = new Set([
+    'renaissance', 'rassemblement national', 'la france insoumise', 'les républicains',
+    'socialistes et apparentés', 'socialistes', 'europe écologie les verts', 'verts',
+    'parti communiste', 'communiste', 'reconquête', 're', 'ps', 'lfi', 'rn', 'eelv', 'pcf'
+  ])
 
-  let matchingVotes = []
+  const realThemes = themes.filter(t => {
+    const themeName = (t.name || t).toLowerCase().trim()
+    return !partyNames.has(themeName)
+  })
 
-  if (keywords.length > 0) {
-    // Search votes containing these keywords
-    matchingVotes = allVotes.filter(v => {
-      const voteText = ((v.titre || '') + ' ' + (v.objet || '')).toLowerCase()
-      return keywords.some(kw => voteText.includes(kw))
+  // If no themes, return empty (we need themes to search)
+  if (realThemes.length === 0) return []
+
+  // Step 1: Extract theme keywords (the actual themes, not generic keywords)
+  const themeKeywords = new Set()
+  realThemes.forEach(t => {
+    const themeName = (t.name || t).toLowerCase()
+    // Add the full theme name and individual words
+    themeKeywords.add(themeName)
+    themeName.split(/\s+/).forEach(word => {
+      if (word.length > 3) themeKeywords.add(word)
     })
+  })
 
-    console.log(`[compareLogic] ${matchingVotes.length} votes trouvés par mots-clés`)
-  }
+  // Step 2: Find all votes that mention the same themes
+  const votesWithThemeMatch = allVotes
+    .map(vote => {
+      const voteText = (
+        (vote.titre || '') + ' ' +
+        (vote.objet || '') + ' ' +
+        (vote.amendmentDescription || '')
+      ).toLowerCase()
 
-  // Strategy 2: If still no matches, do semantic matching with AI
-  if (matchingVotes.length === 0) {
-    const voteList = allVotes
-      .slice(0, 50)
-      .map((v, i) => `${i}. [Vote #${v.numero}] ${(v.titre || v.objet || '').substring(0, 120)}`)
-      .join('\n\n')
+      // Count how many theme keywords this vote mentions
+      const themeMatchCount = [...themeKeywords].filter(kw => voteText.includes(kw)).length
 
-    const prompt = `PROPOSITION:
-"${proposalText}"
+      return { vote, themeMatchCount }
+    })
+    .filter(item => item.themeMatchCount > 0)  // Only votes that mention the theme
+    .sort((a, b) => b.themeMatchCount - a.themeMatchCount)
+    .slice(0, 25)  // Top 25 theme matches
 
-VOTES DISPONIBLES:
-${voteList}
+  // If no votes match the theme, return empty
+  if (votesWithThemeMatch.length === 0) return []
 
-Identifie les NUMÉROS des votes liés au thème de cette proposition (même domaine, même sujet).
-Sois FLEXIBLE - votes partiellement liés sont OK.
-Réponds avec juste les numéros (ex: 2004 2050) ou "aucun".`
+  // Step 3: AI validates that these votes actually address the SAME TOPIC/RAPPORT as the proposition
+  const themesStr = `THÈMES: ${realThemes.map(t => t.name || t).join(', ')}`
 
-    try {
-      const response = await ollamaGenerate(prompt, 30000)
-      if (!response.toLowerCase().includes('aucun')) {
-        const numbers = [...response.matchAll(/\d+/g)]
-          .map(m => parseInt(m[0]))
-        matchingVotes = allVotes.filter(v => numbers.includes(parseInt(v.numero)))
+  const votesList = votesWithThemeMatch
+    .map((item, i) => {
+      const desc = (item.vote.amendmentDescription || item.vote.objet || '').substring(0, 150)
+      return `${i}. ${item.vote.titre}\n${desc || '(pas de description)'}`
+    })
+    .join('\n\n---\n\n')
+
+  const aiValidationPrompt = `PROPOSITION (${themesStr}):
+"${proposalText.substring(0, 400)}"
+
+VOTES/AMENDEMENTS (mentionnent les mêmes thèmes):
+${votesList}
+
+TÂCHE: Vérifie que ces votes parlent du MÊME RAPPORT/SUJET que la proposition.
+- Même si le thème est identique, le rapport peut être différent
+- Exemple: "Éducation" - proposition sur programmes scolaires mais vote sur salaires des profs = DIFFÉRENT
+- Retourne SEULEMENT les votes qui parlent du MÊME RAPPORT
+
+Réponds avec les index séparés par des espaces (ex: 0 2 5) ou "aucun".`
+
+  try {
+    const aiResponse = await ollamaGenerate(aiValidationPrompt)
+    if (!aiResponse.toLowerCase().includes('aucun')) {
+      const selectedIndices = [...aiResponse.matchAll(/\d+/g)]
+        .map(m => parseInt(m[0]))
+      const selectedVotes = selectedIndices
+        .map(idx => votesWithThemeMatch[idx]?.vote)
+        .filter(v => v)
+        .slice(0, 10)  // Max 10 votes
+
+      if (selectedVotes.length > 0) {
+        return selectedVotes
       }
-    } catch (err) {
-      console.log(`[compareLogic] Semantic matching error:`, err.message)
     }
+  } catch (err) {
+    // Silently fail - return theme-filtered votes
+    return votesWithThemeMatch.slice(0, 10).map(item => item.vote)
   }
 
-  return matchingVotes
+  // If AI says no match, return empty
+  return []
 }
 
 // Enrich matching votes with amendment descriptions
 async function enrichVotesWithAmendments(matchingVotes) {
+  const BATCH_SIZE = 8
   const enriched = []
 
-  for (const vote of matchingVotes) {
-    const enrichedVote = { ...vote }
-
-    // Try to load amendment details if amendment number exists
-    if (vote.amendementNumero) {
-      try {
-        const amendmentData = await getAmendmentText(vote.amendementNumero)
-        if (amendmentData) {
-          const description = amendmentData.exposeSommaire || amendmentData.dispositif
-          if (description) {
-            enrichedVote.amendmentDescription = description
-            enrichedVote.amendmentAuthor = amendmentData.auteur
-          } else {
-            // If amendment has no description, use vote title as fallback
+  for (let i = 0; i < matchingVotes.length; i += BATCH_SIZE) {
+    const batch = matchingVotes.slice(i, i + BATCH_SIZE)
+    const batchResults = await Promise.all(
+      batch.map(async (vote) => {
+        const enrichedVote = { ...vote }
+        if (vote.amendementNumero) {
+          try {
+            const amendmentData = await getAmendmentText(vote.amendementNumero)
+            if (amendmentData) {
+              const description = amendmentData.exposeSommaire || amendmentData.dispositif
+              enrichedVote.amendmentDescription = description || vote.titre || `Amendement n° ${vote.amendementNumero}`
+            } else {
+              enrichedVote.amendmentDescription = vote.titre || `Amendement n° ${vote.amendementNumero}`
+            }
+          } catch {
             enrichedVote.amendmentDescription = vote.titre || `Amendement n° ${vote.amendementNumero}`
           }
         } else {
-          enrichedVote.amendmentDescription = vote.titre || `Amendement n° ${vote.amendementNumero}`
+          enrichedVote.amendmentDescription = vote.titre || ''
         }
-      } catch (err) {
-        // Silent fail - use vote description if amendment not available
-        enrichedVote.amendmentDescription = vote.titre || `Amendement n° ${vote.amendementNumero}`
-      }
-    } else {
-      // If no amendment number, use vote title
-      enrichedVote.amendmentDescription = vote.titre || ''
-    }
-
-    enriched.push(enrichedVote)
+        return enrichedVote
+      })
+    )
+    enriched.push(...batchResults)
   }
 
   return enriched
@@ -144,9 +193,7 @@ async function enrichVotesWithAmendments(matchingVotes) {
 
 // Analyze if an amendment is aligned with the proposal
 async function analyzeAmendmentAlignment(proposalText, amendmentDescription) {
-  if (!amendmentDescription || amendmentDescription.length < 5) {
-    return null
-  }
+  if (!amendmentDescription || amendmentDescription.length < 5) return null
 
   const prompt = `PROPOSITION: "${proposalText}"
 
@@ -159,21 +206,18 @@ Réponds par UN SEUL MOT:
 - Réponds "CONTRAIRE" si l'amendement s'oppose à la proposition`
 
   try {
-    const response = await ollamaGenerate(prompt, 30000)
+    const response = await ollamaGenerate(prompt)
     if (!response) return null
     const lower = response.toLowerCase().trim()
 
-    // Check for "aligné" variants (including "aligne" without accent)
-    if (lower.includes('aligné') || lower.includes('aligne') || lower.includes('soutien') || lower.includes('support')) {
+    if (lower.includes('aligné') || lower.includes('aligne') || lower.includes('soutien') || lower.includes('support') || lower.includes('renforce')) {
       return 'aligned'
     }
-    // Check for "contraire" variants
-    if (lower.includes('contraire') || lower.includes('oppose') || lower.includes('opposition')) {
+    if (lower.includes('contraire') || lower.includes('contrair') || lower.includes('contraîre') || lower.includes('contre') || lower.includes('oppose') || lower.includes('opposition')) {
       return 'opposed'
     }
     return null
-  } catch (err) {
-    console.log(`[amendment-align] ERROR: ${err.message}`)
+  } catch {
     return null
   }
 }
@@ -218,7 +262,7 @@ RÉPONSE:
 Donne une analyse constructive (2-3 phrases) qui explique clairement la cohérence ou l'incohérence entre les amendements et la proposition. Sois direct et analyste.`
 
   try {
-    const response = await ollamaGenerate(prompt, 30000)
+    const response = await ollamaGenerate(prompt)
     if (response && response.length > 20) {
       // Determine status from AI response
       const lower = response.toLowerCase()
@@ -251,16 +295,14 @@ Donne une analyse constructive (2-3 phrases) qui explique clairement la cohéren
 }
 
 // Analyze party consistency based on amendment content alignment
-async function analyzeConsistency(proposal, matchingVotes, partyGroup, groupsMap) {
+async function analyzeConsistency(proposal, matchingVotes, partyGroup, groupsMap, themes = []) {
   if (!matchingVotes || matchingVotes.length === 0) {
     console.log(`[analyzeConsistency] No matching votes`)
     return { status: 'unknown', explanation: 'Aucun vote correspondant à cette proposition.' }
   }
 
   const proposalText = typeof proposal === 'string' ? proposal : (proposal.text || proposal.title || '')
-  console.log(`[analyzeConsistency] Analyzing ${matchingVotes.length} votes for group ${partyGroup}`)
 
-  // Prepare votes for analysis
   const votesToAnalyze = matchingVotes
     .map((vote) => {
       const group = (vote.groupes || []).find((g) => g.organeRef === partyGroup)
@@ -273,11 +315,9 @@ async function analyzeConsistency(proposal, matchingVotes, partyGroup, groupsMap
     return aiBasedAnalysis(proposal, matchingVotes)
   }
 
-  // Analyze votes with amendment descriptions in parallel batches
-  // Limit to 8 votes max for faster analysis with larger batches
-  const votesToAnalyzeMax = votesToAnalyze.slice(0, 8)
+  const votesToAnalyzeMax = votesToAnalyze
   const votesWithAlignment = []
-  const BATCH_SIZE = 8
+  const BATCH_SIZE = 10
 
   for (let i = 0; i < votesToAnalyzeMax.length; i += BATCH_SIZE) {
     const batch = votesToAnalyzeMax.slice(i, i + BATCH_SIZE)
@@ -286,14 +326,21 @@ async function analyzeConsistency(proposal, matchingVotes, partyGroup, groupsMap
         const amendmentDesc = vote.amendmentDescription || vote.amendementDescription || vote.titre
         const alignment = await analyzeAmendmentAlignment(proposalText, amendmentDesc)
 
+        // Si alignment est déterminé, l'utiliser. Sinon, utiliser la position du vote
+        let isCoherent = null
+        if (alignment) {
+          isCoherent = (alignment === 'aligned' && partyVote === 'pour') ||
+                       (alignment === 'opposed' && partyVote === 'contre')
+        } else {
+          // Indéterminé: pour = cohérent (vert), contre = incohérent (rouge), abstention = null
+          isCoherent = partyVote === 'pour' ? true : partyVote === 'contre' ? false : null
+        }
+
         return {
           partyVote,
           alignment,
           vote,
-          isCoherent: alignment ? (
-            (alignment === 'aligned' && partyVote === 'pour') ||
-            (alignment === 'opposed' && partyVote === 'contre')
-          ) : null
+          isCoherent
         }
       })
     )
@@ -306,33 +353,107 @@ async function analyzeConsistency(proposal, matchingVotes, partyGroup, groupsMap
   }
 
   if (votesWithAlignment.length === 0) {
-    console.log(`[analyzeConsistency] ${partyGroup} - No alignment results, falling back to aiBasedAnalysis`)
     return aiBasedAnalysis(proposal, matchingVotes)
   }
 
-  // Analyze coherence based on amendment alignment
   const coherent = votesWithAlignment.filter(v => v.isCoherent === true).length
   const incoherent = votesWithAlignment.filter(v => v.isCoherent === false).length
-  const unknown = votesWithAlignment.filter(v => v.isCoherent === null).length
+  const total = votesWithAlignment.length
+  const percentage = total > 0 ? Math.round((coherent / total) * 100) : 0
+
+  // Créer une map des infos de cohérence par vote
+  const coherenceMap = new Map()
+  votesWithAlignment.forEach(({ vote, isCoherent, alignment }) => {
+    coherenceMap.set(vote.numero, { isCoherent, alignment })
+  })
+
+  // Enrichir matchingVotes avec les infos de cohérence
+  const enrichedMatchingVotes = matchingVotes.map(vote => ({
+    ...vote,
+    isCoherent: coherenceMap.get(vote.numero)?.isCoherent,
+    alignment: coherenceMap.get(vote.numero)?.alignment
+  }))
+
+  const coherentVotes = enrichedMatchingVotes.filter(v => v.isCoherent === true)
+  const incoherentVotes = enrichedMatchingVotes.filter(v => v.isCoherent === false)
+
+  // Filter votes to ensure they contain theme keywords (extra validation)
+  const filterVotesByTheme = (votes, themesArray) => {
+    if (themesArray.length === 0) return votes
+    const themeKeywords = new Set()
+    themesArray.forEach(t => {
+      const themeName = (t.name || t).toLowerCase()
+      themeName.split(/\s+/).forEach(word => {
+        if (word.length > 3) themeKeywords.add(word)
+      })
+    })
+
+    return votes.filter(v => {
+      const voteText = ((v.titre || '') + ' ' + (v.objet || '')).toLowerCase()
+      return [...themeKeywords].some(keyword => voteText.includes(keyword))
+    })
+  }
+
+  const coherentVotesFiltered = filterVotesByTheme(coherentVotes, themes)
+  const incoherentVotesFiltered = filterVotesByTheme(incoherentVotes, themes)
+
+  // Générer l'explication avec l'IA
+  const coherentList = coherentVotesFiltered
+    .slice(0, 10)
+    .map(v => `- ${v.titre || v.objet || ''}`)
+    .join('\n')
+
+  const incoherentList = incoherentVotesFiltered
+    .slice(0, 10)
+    .map(v => `- ${v.titre || v.objet || ''}`)
+    .join('\n')
+
+  const analysisPrompt = `PROPOSITION:
+"${proposalText}"
+
+VOTES SOUTENANT LA PROPOSITION (${coherent}/${total}):
+${coherentList || '(aucun)'}
+
+VOTES S'OPPOSANT À LA PROPOSITION (${incoherent}/${total}):
+${incoherentList || '(aucun)'}
+
+Génère un avis analytique court (2-3 phrases) qui explique la cohérence ou l'incohérence entre ces votes et la proposition. Sois direct et critique. Ne cite pas d'exemples spécifiques.`
 
   let status = 'unknown'
   let explanation = ''
 
-  if (coherent > incoherent) {
-    status = 'respected'
-    explanation = `${coherent}/${votesWithAlignment.length} votes sont cohérents avec la proposition (le parti a voté pour les amendements alignés et contre les contraires).`
-  } else if (incoherent > coherent) {
-    status = 'notRespected'
-    explanation = `${incoherent}/${votesWithAlignment.length} votes sont incohérents avec la proposition (le parti a voté contre les amendements alignés ou pour les contraires).`
-  } else if (coherent > 0) {
-    status = 'mitigated'
-    explanation = `${coherent} votes cohérents et ${incoherent} incohérents. Position mitigée.`
-  } else if (unknown > 0) {
-    status = 'unknown'
-    explanation = `Impossible de déterminer précisément l'alignement (${unknown}/${votesWithAlignment.length} amendements non évaluables).`
+  try {
+    explanation = await ollamaGenerate(analysisPrompt)
+    if (!explanation || explanation.length < 20) {
+      // Fallback si réponse vide
+      if (percentage > 60) {
+        explanation = 'Le parti soutient majoritairement cette proposition.'
+      } else if (percentage < 33) {
+        explanation = 'Le parti s\'oppose globalement à cette proposition.'
+      } else {
+        explanation = 'Position nuancée: le parti est divisé sur cette proposition.'
+      }
+    }
+  } catch (err) {
+    // Fallback minimal si l'IA échoue
+    if (percentage > 60) {
+      explanation = 'Le parti soutient majoritairement cette proposition.'
+    } else if (percentage < 33) {
+      explanation = 'Le parti s\'oppose globalement à cette proposition.'
+    } else {
+      explanation = 'Position nuancée: le parti est divisé sur cette proposition.'
+    }
   }
 
-  return { status, explanation, relatedVotes: matchingVotes }
+  if (percentage > 60) {
+    status = 'respected'
+  } else if (percentage < 33) {
+    status = 'notRespected'
+  } else {
+    status = 'mitigated'
+  }
+
+  return { status, explanation, relatedVotes: enrichedMatchingVotes }
 }
 
 export async function compareProposal(proposal, partyGroup) {
@@ -347,11 +468,12 @@ export async function compareProposal(proposal, partyGroup) {
       getGroupsMap().catch(() => new Map())
     ])
 
-    console.log(`[compareProposal] "${proposalTitle}" - recherche votes correspondants...`)
+    // Enrich all votes with amendment descriptions for full content matching
+    const allVotesEnriched = await enrichVotesWithAmendments(allVotes)
 
-    // Find matching votes for this proposal
-    const matchingVotes = await findMatchingVotes(proposalText, allVotes)
-    console.log(`[compareProposal] ${matchingVotes.length} votes trouvés pour "${proposalTitle}"`)
+    // Find matching votes for this proposal (including themes) - now with full descriptions
+    const themes = typeof proposal === 'string' ? [] : (proposal.themes || [])
+    const matchingVotes = await findMatchingVotes(proposalText, allVotesEnriched, themes)
 
     // If no votes found, return unknown
     if (matchingVotes.length === 0) {
@@ -359,45 +481,44 @@ export async function compareProposal(proposal, partyGroup) {
         status: 'unknown',
         explanation: 'Aucun vote correspondant à cette proposition.',
         relatedVotes: [],
+        relatedVotesCount: 0,
         usedOllama: false,
         title: proposalTitle,
         description: proposalDescription,
       }
     }
 
-    // Enrich votes with amendment descriptions
-    const enrichedVotes = await enrichVotesWithAmendments(matchingVotes)
+    const enrichedVotes = matchingVotes
 
     // Analyze consistency based on these votes
     const { status, explanation, relatedVotes = [] } = await analyzeConsistency(
       proposalText,
       enrichedVotes,
       partyGroup,
-      groupsMap
+      groupsMap,
+      themes
     )
 
-    // Enrich votes with group details
-    const relatedWithGroups = relatedVotes.map((vote) => ({
-      ...vote,
-      amendmentNumber: vote.amendementNumero,
-      amendmentDescription: vote.amendmentDescription,
-      groupDetails: (vote.groupes || [])
-        .filter((g) => g.positionMajoritaire)
-        .map((g) => ({
-          organeRef: g.organeRef,
-          nom: groupsMap.get(g.organeRef) || g.organeRef,
-          position: g.positionMajoritaire,
-        }))
-        .sort((a, b) => {
-          const order = { pour: 0, abstention: 1, contre: 2 }
-          return (order[a.position] ?? 3) - (order[b.position] ?? 3)
-        }),
-    }))
+    // Enrich votes with group details - afficher SEULEMENT le groupe du parti
+    const relatedWithGroups = relatedVotes.map((vote) => {
+      const groupMatch = (vote.groupes || []).find((g) => g.organeRef === partyGroup)
+      return {
+        ...vote,
+        amendmentNumber: vote.amendementNumero,
+        amendmentDescription: vote.amendmentDescription,
+        groupDetails: groupMatch ? [{
+          organeRef: groupMatch.organeRef,
+          nom: groupsMap.get(groupMatch.organeRef) || groupMatch.organeRef,
+          position: groupMatch.positionMajoritaire || 'abstention',
+        }] : [],
+      }
+    })
 
     return {
       status,
       explanation,
       relatedVotes: relatedWithGroups,
+      relatedVotesCount: relatedWithGroups.length,
       usedOllama: true,
       title: proposalTitle,
       description: proposalDescription,
@@ -408,6 +529,7 @@ export async function compareProposal(proposal, partyGroup) {
       status: 'unknown',
       explanation: `Erreur lors de la comparaison: ${err.message}`,
       relatedVotes: [],
+      relatedVotesCount: 0,
       usedOllama: false,
       title: proposalTitle,
       description: proposalDescription,

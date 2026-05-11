@@ -18,11 +18,11 @@ export async function register() {
     // Lance preloadAmendmentsCache EN ARRIÈRE-PLAN (don't wait)
     preloadAmendmentsCache().catch((e) => console.warn('[preload] ✗ amendements échoué:', e.message))
 
-    // Analyse COMPLÈTE de tous les partis (bloque le démarrage)
-    console.log('[preload] 🔄 Analyse de tous les partis en cours...')
-    await preloadAllParties()
-
-    const elapsed = ((Date.now() - startTime) / 1000 / 60).toFixed(1)
-    console.log(`[preload] ✅ PRÊT! Temps total: ${elapsed} minutes`)
+    // Analyse COMPLÈTE de tous les partis EN ARRIÈRE-PLAN (don't wait)
+    console.log('[preload] 🔄 Analyse de tous les partis en cours en arrière-plan...')
+    preloadAllParties().then(() => {
+      const elapsed = ((Date.now() - startTime) / 1000 / 60).toFixed(1)
+      console.log(`[preload] ✅ PRÊT! Temps total: ${elapsed} minutes`)
+    }).catch((e) => console.warn('[preload] ✗ analyse échouée:', e.message))
   }
 }

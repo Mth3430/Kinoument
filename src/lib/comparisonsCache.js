@@ -120,7 +120,6 @@ async function getTotalPages(slug) {
 async function fetchProposals(slug) {
   const baseUrl = `https://tous-les-programmes.fr/partis/${slug}`
   const totalPages = await getTotalPages(slug)
-  console.log(`[fetch] ${slug}: ${totalPages} pages détectées`)
 
   let allProposals = []
 
@@ -129,13 +128,11 @@ async function fetchProposals(slug) {
     try {
       const pageProposals = await fetchPageProposals(pageUrl)
       allProposals = [...allProposals, ...pageProposals]
-      console.log(`[fetch] ${slug}: page ${page}/${totalPages} - ${pageProposals.length} propositions`)
     } catch (e) {
       console.warn(`[fetch] ${slug}: erreur page ${page}:`, e.message)
     }
   }
 
-  console.log(`[fetch] ${slug}: total ${allProposals.length} propositions`)
   if (allProposals.length === 0) throw new Error(`Aucune proposition trouvée pour ${slug}`)
   return allProposals
 }
@@ -154,8 +151,6 @@ async function persistParty(slug, comparisons, proposals, voteCount) {
 // Vérifie si de nouvelles propositions ou de nouveaux votes sont disponibles,
 // et ne traite que ce qui est nouveau.
 async function checkForUpdates(party, diskData) {
-  console.log(`[preload] ${party.name} : vérification des mises à jour...`)
-
   let currentProposals
   try {
     currentProposals = await fetchProposals(party.slug)
@@ -177,16 +172,13 @@ async function checkForUpdates(party, diskData) {
   const hasNewVotes = newVoteCount > 50
 
   if (newProposals.length === 0 && !hasNewVotes) {
-    console.log(`[preload] ${party.name} : aucune mise à jour nécessaire`)
     return
   }
-
-  console.log(`[preload] ${party.name} : ${newProposals.length} nouvelles propositions, ${newVoteCount} nouveaux votes`)
 
   const comparisons = [...(cache.get(party.slug)?.comparisons || diskData.comparisons)]
 
   // Traite les nouvelles propositions en parallèle
-  const BATCH_SIZE = 10
+  const BATCH_SIZE = 15
   for (let i = 0; i < newProposals.length; i += BATCH_SIZE) {
     const batch = newProposals.slice(i, i + BATCH_SIZE)
     const batchResults = await Promise.allSettled(
@@ -198,12 +190,23 @@ async function checkForUpdates(party, diskData) {
       if (result.status === 'fulfilled') {
         comparisons.push({ proposal, ...result.value })
       } else {
-        console.warn(`[preload] ${party.name} nouvelle proposition échouée:`, result.reason?.message)
+        console.warn(`[preload] ${party.name} proposition échouée:`, result.reason?.message)
         comparisons.push({ proposal, status: 'unknown', relatedVotes: [], usedOllama: false })
       }
     })
 
+    const progress = Math.round((i + batch.length) / currentProposals.length * 100)
+    console.log(`[preload] ${party.name}: ${progress}%`)
     cache.set(party.slug, { status: 'ready', comparisons: [...comparisons], progress: comparisons.length, total: comparisons.length })
+
+    // Sauvegarde périodique pendant les mises à jour
+    await saveToDisk(`comparisons-${party.slug}`, {
+      status: 'loading',
+      comparisons,
+      proposals: currentProposals,
+      voteCount: currentVoteCount,
+      savedAt: new Date().toISOString(),
+    })
   }
 
   // Si de nouveaux votes sont disponibles, re-analyse les propositions sans résultat en parallèle
@@ -236,15 +239,13 @@ async function checkForUpdates(party, diskData) {
 
 // Analyse complète (premier lancement ou cache corrompu)
 async function fullPreloadParty(party) {
-  console.log(`[preload] Début analyse complète : ${party.name}`)
   cache.set(party.slug, { status: 'loading', comparisons: [], progress: 0, total: 0 })
   try {
     const proposals = await fetchProposals(party.slug)
-    console.log(`[preload] ${party.name} : ${proposals.length} propositions récupérées`)
     cache.set(party.slug, { status: 'loading', comparisons: [], progress: 0, total: proposals.length })
 
     const comparisons = []
-    const BATCH_SIZE = 10
+    const BATCH_SIZE = 15
 
     for (let i = 0; i < proposals.length; i += BATCH_SIZE) {
       const batch = proposals.slice(i, i + BATCH_SIZE)
@@ -256,16 +257,25 @@ async function fullPreloadParty(party) {
         const propIdx = i + idx
         const proposal = proposals[propIdx]
         if (result.status === 'fulfilled') {
-          const voteCount = result.value.relatedVotes?.length || 0
-          console.log(`[preload] ${party.name} [${propIdx + 1}/${proposals.length}] "${proposal.title}": ${voteCount} votes liés`)
           comparisons.push({ proposal, ...result.value })
         } else {
           console.warn(`[preload] ${party.name} proposition ${propIdx + 1} échouée:`, result.reason?.message)
-          comparisons.push({ proposal, status: 'unknown', relatedVotes: [], usedOllama: false })
+          comparisons.push({ proposal, status: 'unknown', relatedVotes: [], relatedVotesCount: 0, usedOllama: false })
         }
       })
 
+      const progress = Math.round((i + batch.length) / proposals.length * 100)
+      console.log(`[preload] ${party.name}: ${progress}%`)
       cache.set(party.slug, { status: 'loading', comparisons: [...comparisons], progress: Math.min(i + BATCH_SIZE, proposals.length), total: proposals.length })
+
+      // Sauvegarde périodique sur disque après chaque batch
+      await saveToDisk(`comparisons-${party.slug}`, {
+        status: 'loading',
+        comparisons,
+        proposals,
+        voteCount: 0,
+        savedAt: new Date().toISOString(),
+      })
     }
 
     cache.set(party.slug, { status: 'ready', comparisons, progress: proposals.length, total: proposals.length })
@@ -273,7 +283,7 @@ async function fullPreloadParty(party) {
     let voteCount = 0
     try { voteCount = (await getVotes()).length } catch {}
     await persistParty(party.slug, comparisons, proposals, voteCount)
-    console.log(`[preload] ${party.name} : terminé et sauvegardé sur disque`)
+    console.log(`[preload] ${party.name}: 100% ✓`)
   } catch (e) {
     console.warn(`[preload] ${party.name} échoué:`, e.message)
     cache.set(party.slug, { status: 'error', comparisons: [], progress: 0, total: 0, error: e.message })
@@ -308,11 +318,18 @@ export async function preloadAllParties() {
   global._preloadStarted = true
   console.log('[preload] Démarrage...')
 
-  const results = await Promise.allSettled(PARTIES.map(party => preloadParty(party)))
+  let failed = 0
+  for (const party of PARTIES) {
+    try {
+      await preloadParty(party)
+    } catch (e) {
+      failed++
+      console.warn(`[preload] ${party.name} échoué:`, e.message)
+    }
+  }
 
-  const failed = results.filter((r) => r.status === 'rejected')
-  if (failed.length > 0) {
-    console.warn(`[preload] ${failed.length}/${PARTIES.length} partis ont échoué`)
+  if (failed > 0) {
+    console.warn(`[preload] ${failed}/${PARTIES.length} partis ont échoué`)
   } else {
     console.log('[preload] Toutes les analyses terminées (ou chargées depuis le cache)')
   }

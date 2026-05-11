@@ -78,10 +78,20 @@
       "Bash(git revert *)",
       "Bash(curl -s \"http://localhost:3001/api/comparisons?slug=parti-communiste-francais\")",
       "Bash(curl -s \"http://localhost:3001/api/comparisons?slug=reconnaissance\")",
-      "Bash(curl -s \"http://localhost:3001/api/comparisons?slug=france-insoumise\")"
+      "Bash(curl -s \"http://localhost:3001/api/comparisons?slug=france-insoumise\")",
+      "Bash(python3 -c \"import sys, json; d=json.load\\(sys.stdin\\); print\\(f\\\\\"Total: {len\\(d['comparisons']\\)}\\\\\"\\); statuses = {}; [statuses.update\\({c['status']: statuses.get\\(c['status'], 0\\) + 1}\\) for c in d['comparisons']]; print\\('Status breakdown:'\\); [print\\(f\\\\\" {s}: {c}\\\\\"\\) for s, c in sorted\\(statuses.items\\(\\)\\)]\")",
+      "Bash(cp \"C:\\\\Users\\\\mathi\\\\Desktop\\\\Kinoument\\\\src\\\\lib\\\\compareLogic.js\" \"C:\\\\Users\\\\mathi\\\\Desktop\\\\Kinoument\\\\src\\\\lib\\\\compareLogic.js.backup\")",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(curl -s http://localhost:3000/api/comparisons?slug=renaissance)",
+      "Bash(curl -s 'http://localhost:3000/api/comparisons?slug=renaissance')",
+      "WebFetch(domain:localhost)",
+      "Bash(curl -s 'http://localhost:3000/api/comparisons?slug=renaissance' > /tmp/renaissance.json 2>&1 && ls -lh /tmp/renaissance.json)",
+      "Bash(git reset *)"
     ],
     "additionalDirectories": [
-      "\\tmp"
+      "\\tmp",
+      "C:\\Users\\mathi\\Desktop\\Kinoument\\.cache",
+      "C:\\Users\\mathi\\Desktop\\Kinoument\\src\\lib"
     ]
   }
 }

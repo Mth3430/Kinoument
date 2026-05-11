@@ -276,23 +276,28 @@ export default function Home() {
 
           <div>
             <h3 style={{ color: textColor, fontWeight: '600', marginBottom: '0.75rem' }}>
-              🗳️ Analyse des Programmes
+              🗳️ Sélection des Votes
             </h3>
             <p style={{ color: secondaryText, lineHeight: '1.6', margin: 0 }}>
-              Nous scrappons les propositions officielles de chaque parti depuis{' '}
-              <a href="https://tous-les-programmes.fr" target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6' }}>
-                Tous-Les-Programmes.fr
-              </a>
-              {' '}et les comparons avec les votes du Parlement.
+              Pour chaque proposition, l'IA sélectionne les votes pertinents du sujet principal et des sujets connexes proches. Les votes trop génériques sont rejetés.
             </p>
           </div>
 
           <div>
             <h3 style={{ color: textColor, fontWeight: '600', marginBottom: '0.75rem' }}>
-              🤖 Intelligence Artificielle
+              🤖 Analyse des Amendements
             </h3>
             <p style={{ color: secondaryText, lineHeight: '1.6', margin: 0 }}>
-              Nous utilisons l'IA (Ollama/Llama3) pour analyser la cohérence sémantique entre les propositions et les votes du groupe parlementaire.
+              Ollama/Mistral analyse chaque amendement pour déterminer s'il soutient ou s'oppose à la proposition. 🟢 Vert = cohérent, 🔴 Rouge = incohérent.
+            </p>
+          </div>
+
+          <div>
+            <h3 style={{ color: textColor, fontWeight: '600', marginBottom: '0.75rem' }}>
+              📊 Statuts de Cohérence
+            </h3>
+            <p style={{ color: secondaryText, lineHeight: '1.6', margin: 0 }}>
+              🟢 Respecté (&gt;60%), 🟡 Mitigé (33-60%), 🔴 Non respecté (0-33%). Basé sur le pourcentage d'amendements cohérents avec la proposition.
             </p>
           </div>
 
@@ -311,10 +316,10 @@ export default function Home() {
 
           <div>
             <h3 style={{ color: textColor, fontWeight: '600', marginBottom: '0.75rem' }}>
-              ⚡ Mise à Jour
+              ⚡ Cache et Performance
             </h3>
             <p style={{ color: secondaryText, lineHeight: '1.6', margin: 0 }}>
-              Les données sont mises à jour automatiquement. Les sondages se rafraîchissent tous les jours, et l'analyse se met à jour en temps réel.
+              Les analyses sont mises en cache sur disque pour une performance optimale. Chaque parti est analysé séquentiellement pour éviter les surcharges système.
             </p>
           </div>
 

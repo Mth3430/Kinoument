@@ -269,11 +269,32 @@ export default function ProposalDetailPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 {proposal.relatedVotes.map((vote, i) => (
                   <div key={i} style={{
-                    border: `1px solid ${cardBorder}`,
+                    border: `3px solid ${
+                      vote.isCoherent === true ? '#10b981' :
+                      vote.isCoherent === false ? '#ef4444' : cardBorder
+                    }`,
                     borderRadius: '8px',
                     padding: '1.5rem',
-                    background: darkMode ? '#1f2937' : '#f9fafb',
+                    background: vote.isCoherent === true ? (darkMode ? '#064e3b' : '#ecfdf5') :
+                               vote.isCoherent === false ? (darkMode ? '#5a1a1a' : '#fef2f2') :
+                               darkMode ? '#1f2937' : '#f9fafb',
                   }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '4px',
+                        fontSize: '0.7rem',
+                        fontWeight: '600',
+                        background: vote.isCoherent === true ? '#10b981' :
+                                   vote.isCoherent === false ? '#ef4444' : '#9ca3af',
+                        color: 'white',
+                      }}>
+                        {vote.isCoherent === true ? '✓ Cohérent' :
+                         vote.isCoherent === false ? '✗ Incohérent' : '? Indéterminé'}
+                      </span>
+                    </div>
                     <h3 style={{ color: textColor, margin: '0 0 0.75rem 0', fontSize: '1.05rem', fontWeight: '600' }}>
                       {vote.titre}
                     </h3>

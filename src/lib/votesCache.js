@@ -32,12 +32,7 @@ export async function getVotes() {
       const voteDate = scrutin.dateScrutin || ''
       totalParsed++
 
-      // Filter to keep only votes from 2022-01-01 onwards
-      if (totalParsed === 1) console.log(`[votesCache] Sample date format: "${voteDate}" (type: ${typeof voteDate})`)
-      if (voteDate && voteDate.slice(0, 4) < '2022') {
-        totalFiltered++
-        continue
-      }
+      // No date filtering - keep all votes
 
       const groupes = (scrutin.ventilationVotes?.organe?.groupes?.groupe || []).map((g) => ({
         organeRef: g.organeRef,
@@ -63,8 +58,10 @@ export async function getVotes() {
     }
   }
 
-  console.log(`[votesCache] Chargé ${votes.length} votes (${totalParsed} total, ${totalFiltered} filtrés avant 2022)`)
-  console.log(`[votesCache] ${amendmentsFound} votes avec numéro d'amendement trouvés`)
+  console.log(`[votesCache] ✓ Chargé ${votes.length} votes`)
+  console.log(`[votesCache] ✓ ${amendmentsFound} votes avec amendements détectés`)
+  console.log(`[votesCache] Total fichiers JSON: ${fileNames.length}`)
+  console.log(`[votesCache] Taille cache: ${Math.round((JSON.stringify(votes).length / 1024 / 1024) * 100) / 100}MB`)
   cache = votes
   cacheTime = Date.now()
   return votes

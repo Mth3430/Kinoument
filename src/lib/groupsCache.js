@@ -5,16 +5,15 @@ const CACHE_TTL = 60 * 60 * 1000
 
 // Fallback: known 16th legislature parliamentary groups
 const FALLBACK_GROUPS = new Map([
-  ['PO800490', 'La République En Marche'],
-  ['PO800496', 'Mouvement Démocrate (MODEM)'],
-  ['PO800526', 'Agir ensemble'],
-  ['PO800502', 'Les Républicains'],
-  ['PO800532', 'Nouvelle Gauche'],
-  ['PO793087', 'Socialistes et apparentés'],
-  ['PO800538', 'La France Insoumise'],
+  ['PO800538', 'Renaissance'],
   ['PO800520', 'Rassemblement National'],
-  ['PO800508', 'Constructif, Libéral, Progressiste'],
-  ['PO800484', 'Gauche Démocrate & Républicaine'],
+  ['PO800490', 'La France Insoumise'],
+  ['PO800508', 'Les Républicains'],
+  ['PO800496', 'Socialistes et apparentés'],
+  ['PO800526', 'Europe Écologie Les Verts'],
+  ['PO800502', 'Parti Communiste'],
+  ['PO800532', 'Reconquête'],
+  ['PO800484', 'Mouvement Démocrate (MODEM)'],
   ['PO800514', 'Libertés et Territoires'],
   ['PO840056', 'Non-inscrits'],
 ])
