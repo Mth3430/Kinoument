@@ -103,86 +103,127 @@ async function findMatchingVotes(proposalText, allVotes, themes = []) {
       .slice(0, 50)
   }
 
-  // If keywords found votes, validate with AI
+  // If keywords found votes, score each one and keep only high-confidence matches
   if (candidateVotes.length > 0) {
     const votesList = candidateVotes
       .map((item, i) => {
-        const desc = (item.vote.amendmentDescription || item.vote.objet || '').substring(0, 150)
-        return `${i}. ${item.vote.titre}\n${desc || '(pas de description)'}`
+        const vote = item.vote
+        // Include ALL available information
+        const fullDesc = [
+          vote.titre || '',
+          vote.objet || '',
+          vote.amendmentDescription || '',
+          vote.sort ? `(Résultat: ${vote.sort})` : ''
+        ]
+          .filter(x => x)
+          .join('\n')
+
+        return `${i}. ${fullDesc}`
       })
       .join('\n\n---\n\n')
 
-    const aiValidationPrompt = `PROPOSITION:
-"${proposalText.substring(0, 500)}"
+    const aiScoringPrompt = `PROPOSITION À ANALYSER:
+"${proposalText}"
 
-VOTES/AMENDEMENTS (candidats):
+VOTES/AMENDEMENTS À ÉVALUER (information complète):
 ${votesList}
 
-TÂCHE: Identifie TOUS les votes qui sont VRAIMENT EN RAPPORT avec cette proposition.
-Sois strict: un vote ne doit pas juste partager un mot-clé, il doit traiter le MÊME SUJET.
+TÂCHE: Pour CHAQUE vote, donne un score de pertinence de 0-10.
+- 8-10: Vote adresse EXACTEMENT le même sujet
+- 5-7: Vote partagent un domaine mais sujet différent
+- 0-4: Vote sans rapport
 
-Retourne les index des votes pertinents (ex: 0 2 5) ou "aucun" si aucun n'est pertinent.`
+Format de réponse: "0:8 1:3 2:9 3:2" (index:score)`
 
     try {
-      const aiResponse = await ollamaGenerate(aiValidationPrompt)
-      if (!aiResponse.toLowerCase().includes('aucun')) {
-        const selectedIndices = [...aiResponse.matchAll(/\d+/g)]
-          .map(m => parseInt(m[0]))
-        const selectedVotes = selectedIndices
-          .map(idx => candidateVotes[idx]?.vote)
-          .filter(v => v)
-          .slice(0, 15)
+      const aiResponse = await ollamaGenerate(aiScoringPrompt)
+      const scores = new Map()
 
-        if (selectedVotes.length > 0) {
-          return selectedVotes
+      // Parse the response format "0:8 1:3 2:9"
+      const matches = aiResponse.matchAll(/(\d+):(\d+)/g)
+      for (const match of matches) {
+        const idx = parseInt(match[1])
+        const score = parseInt(match[2])
+        scores.set(idx, score)
+      }
+
+      // Keep only votes with score >= 8
+      const selectedVotes = []
+      scores.forEach((score, idx) => {
+        if (score >= 8 && candidateVotes[idx]) {
+          selectedVotes.push(candidateVotes[idx].vote)
         }
+      })
+
+      if (selectedVotes.length > 0) {
+        return selectedVotes.slice(0, 15)
       }
     } catch (err) {
-      console.log(`[findMatchingVotes] AI validation with keywords failed:`, err.message)
+      console.log(`[findMatchingVotes] AI scoring failed:`, err.message)
     }
   }
 
-  // Step 2: No votes found with keywords - validate a sample of votes without pre-filter
-  console.log(`[findMatchingVotes] No keyword matches, sampling votes for AI validation...`)
+  // Step 2: No votes found with keywords - score sample of votes
+  console.log(`[findMatchingVotes] No keyword matches, sampling votes for scoring...`)
 
-  // Take a sample of 100 votes instead of ALL (randomized to get variety)
+  // Take a sample of 100 votes
   const sampleSize = Math.min(100, allVotes.length)
   const sampleVotes = allVotes.slice(0, sampleSize)
 
   const votesList = sampleVotes
     .map((vote, idx) => {
-      const desc = (vote.amendmentDescription || vote.objet || '').substring(0, 100)
-      return `${idx}. ${vote.titre}\n${desc || '(pas de description)'}`
+      // Include ALL available information
+      const fullDesc = [
+        vote.titre || '',
+        vote.objet || '',
+        vote.amendmentDescription || '',
+        vote.sort ? `(Résultat: ${vote.sort})` : ''
+      ]
+        .filter(x => x)
+        .join('\n')
+
+      return `${idx}. ${fullDesc}`
     })
     .join('\n\n---\n\n')
 
-  const aiValidationPrompt = `PROPOSITION:
-"${proposalText.substring(0, 500)}"
+  const aiScoringPrompt = `PROPOSITION À ANALYSER:
+"${proposalText}"
 
-VOTES/AMENDEMENTS (sample de ${sampleSize} votes):
+VOTES/AMENDEMENTS (sample de ${sampleSize} votes - information complète):
 ${votesList}
 
-TÂCHE: Identifie les votes VRAIMENT EN RAPPORT avec cette proposition.
-Sois strict - le vote doit traiter le MÊME SUJET.
+TÂCHE: Pour CHAQUE vote, donne un score de pertinence de 0-10.
+- 8-10: Vote adresse EXACTEMENT le même sujet
+- 5-7: Vote partage un domaine mais sujet différent
+- 0-4: Vote sans rapport
 
-Retourne les index des votes pertinents (ex: 0 2 5) ou "aucun".`
+Format de réponse: "0:8 1:3 2:9 3:2" (index:score)`
 
   try {
-    const aiResponse = await ollamaGenerate(aiValidationPrompt)
-    if (!aiResponse.toLowerCase().includes('aucun')) {
-      const selectedIndices = [...aiResponse.matchAll(/\d+/g)]
-        .map(m => parseInt(m[0]))
-      const selectedVotes = selectedIndices
-        .map(idx => sampleVotes[idx])
-        .filter(v => v)
-        .slice(0, 15)
+    const aiResponse = await ollamaGenerate(aiScoringPrompt)
+    const scores = new Map()
 
-      if (selectedVotes.length > 0) {
-        return selectedVotes
+    // Parse the response format "0:8 1:3 2:9"
+    const matches = aiResponse.matchAll(/(\d+):(\d+)/g)
+    for (const match of matches) {
+      const idx = parseInt(match[1])
+      const score = parseInt(match[2])
+      scores.set(idx, score)
+    }
+
+    // Keep only votes with score >= 8
+    const selectedVotes = []
+    scores.forEach((score, idx) => {
+      if (score >= 8 && sampleVotes[idx]) {
+        selectedVotes.push(sampleVotes[idx])
       }
+    })
+
+    if (selectedVotes.length > 0) {
+      return selectedVotes.slice(0, 15)
     }
   } catch (err) {
-    console.log(`[findMatchingVotes] Sample validation failed:`, err.message)
+    console.log(`[findMatchingVotes] Sample scoring failed:`, err.message)
   }
 
   return []
