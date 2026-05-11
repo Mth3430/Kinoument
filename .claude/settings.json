@@ -86,7 +86,11 @@
       "Bash(curl -s 'http://localhost:3000/api/comparisons?slug=renaissance')",
       "WebFetch(domain:localhost)",
       "Bash(curl -s 'http://localhost:3000/api/comparisons?slug=renaissance' > /tmp/renaissance.json 2>&1 && ls -lh /tmp/renaissance.json)",
-      "Bash(git reset *)"
+      "Bash(git reset *)",
+      "Bash(curl -X DELETE http://localhost:3000/api/cache)",
+      "Bash(pkill -f \"node.*next\")",
+      "PowerShell(Stop-Process -Name node -Force -ErrorAction SilentlyContinue)",
+      "Bash(npm run *)"
     ],
     "additionalDirectories": [
       "\\tmp",

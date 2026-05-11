@@ -60,79 +60,112 @@ async function extractProposalKeywords(proposalText) {
   return keywords
 }
 
-// NOUVELLE APPROCHE: Find matching votes based on THEMES
+// Find matching votes: keyword pre-filter, then AI validation. If nothing found, send all votes to AI
 async function findMatchingVotes(proposalText, allVotes, themes = []) {
   if (!allVotes || allVotes.length === 0) return []
 
-  // Filter out party names from themes
+  // Extract keywords from proposal text
+  const keywords = await extractProposalKeywords(proposalText)
+
+  // Also add theme names as keywords
   const partyNames = new Set([
     'renaissance', 'rassemblement national', 'la france insoumise', 'les républicains',
     'socialistes et apparentés', 'socialistes', 'europe écologie les verts', 'verts',
     'parti communiste', 'communiste', 'reconquête', 're', 'ps', 'lfi', 'rn', 'eelv', 'pcf'
   ])
 
-  const realThemes = themes.filter(t => {
+  const themeKeywords = []
+  themes.forEach(t => {
     const themeName = (t.name || t).toLowerCase().trim()
-    return !partyNames.has(themeName)
+    if (!partyNames.has(themeName) && themeName.length > 3) {
+      themeKeywords.push(themeName)
+    }
   })
 
-  // If no themes, return empty (we need themes to search)
-  if (realThemes.length === 0) return []
+  const allKeywords = [...keywords, ...themeKeywords]
 
-  // Step 1: Extract theme keywords (the actual themes, not generic keywords)
-  const themeKeywords = new Set()
-  realThemes.forEach(t => {
-    const themeName = (t.name || t).toLowerCase()
-    // Add the full theme name and individual words
-    themeKeywords.add(themeName)
-    themeName.split(/\s+/).forEach(word => {
-      if (word.length > 3) themeKeywords.add(word)
-    })
-  })
+  // Step 1: Try pre-filter with keywords
+  let candidateVotes = []
+  if (allKeywords.length > 0) {
+    candidateVotes = allVotes
+      .map((vote, idx) => {
+        const voteText = (
+          (vote.titre || '') + ' ' +
+          (vote.objet || '') + ' ' +
+          (vote.amendmentDescription || '')
+        ).toLowerCase()
 
-  // Step 2: Find all votes that mention the same themes
-  const votesWithThemeMatch = allVotes
-    .map(vote => {
-      const voteText = (
-        (vote.titre || '') + ' ' +
-        (vote.objet || '') + ' ' +
-        (vote.amendmentDescription || '')
-      ).toLowerCase()
+        const matchCount = allKeywords.filter(kw => voteText.includes(kw)).length
+        return { vote, idx, matchCount }
+      })
+      .filter(item => item.matchCount > 0)
+      .sort((a, b) => b.matchCount - a.matchCount)
+      .slice(0, 50)
+  }
 
-      // Count how many theme keywords this vote mentions
-      const themeMatchCount = [...themeKeywords].filter(kw => voteText.includes(kw)).length
+  // If keywords found votes, validate with AI
+  if (candidateVotes.length > 0) {
+    const votesList = candidateVotes
+      .map((item, i) => {
+        const desc = (item.vote.amendmentDescription || item.vote.objet || '').substring(0, 150)
+        return `${i}. ${item.vote.titre}\n${desc || '(pas de description)'}`
+      })
+      .join('\n\n---\n\n')
 
-      return { vote, themeMatchCount }
-    })
-    .filter(item => item.themeMatchCount > 0)  // Only votes that mention the theme
-    .sort((a, b) => b.themeMatchCount - a.themeMatchCount)
-    .slice(0, 25)  // Top 25 theme matches
+    const aiValidationPrompt = `PROPOSITION:
+"${proposalText.substring(0, 500)}"
 
-  // If no votes match the theme, return empty
-  if (votesWithThemeMatch.length === 0) return []
+VOTES/AMENDEMENTS (candidats):
+${votesList}
 
-  // Step 3: AI validates that these votes actually address the SAME TOPIC/RAPPORT as the proposition
-  const themesStr = `THÈMES: ${realThemes.map(t => t.name || t).join(', ')}`
+TÂCHE: Identifie TOUS les votes qui sont VRAIMENT EN RAPPORT avec cette proposition.
+Sois strict: un vote ne doit pas juste partager un mot-clé, il doit traiter le MÊME SUJET.
 
-  const votesList = votesWithThemeMatch
-    .map((item, i) => {
-      const desc = (item.vote.amendmentDescription || item.vote.objet || '').substring(0, 150)
-      return `${i}. ${item.vote.titre}\n${desc || '(pas de description)'}`
+Retourne les index des votes pertinents (ex: 0 2 5) ou "aucun" si aucun n'est pertinent.`
+
+    try {
+      const aiResponse = await ollamaGenerate(aiValidationPrompt)
+      if (!aiResponse.toLowerCase().includes('aucun')) {
+        const selectedIndices = [...aiResponse.matchAll(/\d+/g)]
+          .map(m => parseInt(m[0]))
+        const selectedVotes = selectedIndices
+          .map(idx => candidateVotes[idx]?.vote)
+          .filter(v => v)
+          .slice(0, 15)
+
+        if (selectedVotes.length > 0) {
+          return selectedVotes
+        }
+      }
+    } catch (err) {
+      console.log(`[findMatchingVotes] AI validation with keywords failed:`, err.message)
+    }
+  }
+
+  // Step 2: No votes found with keywords - validate a sample of votes without pre-filter
+  console.log(`[findMatchingVotes] No keyword matches, sampling votes for AI validation...`)
+
+  // Take a sample of 100 votes instead of ALL (randomized to get variety)
+  const sampleSize = Math.min(100, allVotes.length)
+  const sampleVotes = allVotes.slice(0, sampleSize)
+
+  const votesList = sampleVotes
+    .map((vote, idx) => {
+      const desc = (vote.amendmentDescription || vote.objet || '').substring(0, 100)
+      return `${idx}. ${vote.titre}\n${desc || '(pas de description)'}`
     })
     .join('\n\n---\n\n')
 
-  const aiValidationPrompt = `PROPOSITION (${themesStr}):
-"${proposalText.substring(0, 400)}"
+  const aiValidationPrompt = `PROPOSITION:
+"${proposalText.substring(0, 500)}"
 
-VOTES/AMENDEMENTS (mentionnent les mêmes thèmes):
+VOTES/AMENDEMENTS (sample de ${sampleSize} votes):
 ${votesList}
 
-TÂCHE: Vérifie que ces votes parlent du MÊME RAPPORT/SUJET que la proposition.
-- Même si le thème est identique, le rapport peut être différent
-- Exemple: "Éducation" - proposition sur programmes scolaires mais vote sur salaires des profs = DIFFÉRENT
-- Retourne SEULEMENT les votes qui parlent du MÊME RAPPORT
+TÂCHE: Identifie les votes VRAIMENT EN RAPPORT avec cette proposition.
+Sois strict - le vote doit traiter le MÊME SUJET.
 
-Réponds avec les index séparés par des espaces (ex: 0 2 5) ou "aucun".`
+Retourne les index des votes pertinents (ex: 0 2 5) ou "aucun".`
 
   try {
     const aiResponse = await ollamaGenerate(aiValidationPrompt)
@@ -140,20 +173,18 @@ Réponds avec les index séparés par des espaces (ex: 0 2 5) ou "aucun".`
       const selectedIndices = [...aiResponse.matchAll(/\d+/g)]
         .map(m => parseInt(m[0]))
       const selectedVotes = selectedIndices
-        .map(idx => votesWithThemeMatch[idx]?.vote)
+        .map(idx => sampleVotes[idx])
         .filter(v => v)
-        .slice(0, 10)  // Max 10 votes
+        .slice(0, 15)
 
       if (selectedVotes.length > 0) {
         return selectedVotes
       }
     }
   } catch (err) {
-    // Silently fail - return theme-filtered votes
-    return votesWithThemeMatch.slice(0, 10).map(item => item.vote)
+    console.log(`[findMatchingVotes] Sample validation failed:`, err.message)
   }
 
-  // If AI says no match, return empty
   return []
 }
 
