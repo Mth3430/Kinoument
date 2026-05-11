@@ -6,20 +6,20 @@
 
 ## 🎯 À propos
 
-Kinoument analyse les discours politiques en les confrontant à la réalité. Il scrape automatiquement les propositions de programme des partis politiques français depuis [tous-les-programmes.fr](https://www.tous-les-programmes.fr) et les compare avec plus de 6 000 votes parlementaires réels en utilisant l'analyse sémantique par IA.
+Kinoument analyse les discours politiques en les confrontant à la réalité. Il scrape automatiquement les propositions de programme des partis politiques français depuis [tous-les-programmes.fr](https://www.tous-les-programmes.fr) et les compare avec plus de 6 000 votes parlementaires réels en utilisant un système de matching par thèmes et d'heuristiques strictes.
 
 **Objectif** : Fournir aux citoyens une vision objective et basée sur les données des écarts entre les promesses électorales et les actions réelles des partis au Parlement.
 
 ## ✨ Fonctionnalités principales
 
 - **📊 Scraping automatique** : Récupère tous les programmes politiques depuis les sites officiels des partis
-- **🤖 Analyse IA sémantique** : Utilise Ollama/Llama3 pour lier les propositions aux votes parlementaires
+- **🎯 Matching par thèmes** : Utilise des heuristiques strictes basées sur les thèmes pour lier propositions aux votes
 - **✅ Classification du respect** : 
-  - ✓ Respecté - la promesse a été tenue
-  - ✗ Non respecté - la promesse n'a pas été tenue  
-  - ≈ Mitigé - partiellement respecté ou en cours
+  - ✓ Respecté - la majorité des votes du parti sont POUR la proposition
+  - ✗ Non respecté - la majorité des votes du parti sont CONTRE la proposition  
+  - ≈ Mitigé - le parti est divisé (votes pour et contre)
 - **📱 Interface interactive** : Grille de propositions avec chargement par scroll
-- **🔍 Pages de détail** : Vue complète de chaque proposition avec analyse AI
+- **🔍 Pages de détail** : Vue complète de chaque proposition avec votes liés
 - **🌓 Mode sombre/clair** : Support complet des thèmes visuels
 - **🌍 Multilingue** : Support français et anglais
 
@@ -85,20 +85,30 @@ npm run start
 ### Stack technologique
 - **Frontend** : Next.js 14 (App Router)
 - **API** : Routes API Next.js (Pages Router)
-- **Scraping** : node-html-parser + Puppeteer
-- **IA/NLP** : Ollama (Llama3)
+- **Scraping** : node-html-parser
+- **Matching** : Système de thèmes + heuristiques strictes (no-AI approach)
 - **Graphiques** : Recharts
 - **Stockage** : Disk cache (fichiers locaux)
 
 ### Flux de données
 ```
 1. Scraper → tous-les-programmes.fr
-2. Cache disque → Stockage propositions
-3. Comparateur → Votes parlementaires
-4. IA (Ollama) → Analyse sémantique
-5. API → Frontend
-6. Grille interactive → Utilisateur
+2. Extraction propositions avec thèmes
+3. Cache disque → Stockage propositions
+4. Récupération votes parlementaires (4106+ votes)
+5. Matching par thèmes stricts
+6. Enrichissement votes avec amendements
+7. Calcul cohérence (POUR=respecté, CONTRE=non-respecté)
+8. API → Frontend
+9. Grille interactive → Utilisateur
 ```
+
+### Algorithme de matching
+1. **Extraction de thèmes** : Chaque proposition a des thèmes (Éducation, Santé, etc.)
+2. **Filtrage par thèmes** : Les votes sont recherchés s'ils mentionnent les mêmes thèmes
+3. **Rejet des domaines différents** : Si un vote mentionne un domaine complètement différent (agriculture pour une proposition sur éducation), il est rejeté
+4. **Max 10 votes** : Chaque proposition peut avoir au maximum 10 votes liés
+5. **Cohérence simple** : Si le parti a voté POUR = respecté; CONTRE = non-respecté
 
 ### Structure du projet
 ```
