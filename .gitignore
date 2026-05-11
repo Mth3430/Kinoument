@@ -51,3 +51,4 @@ Thumbs.db
 # Project specific
 src/public/data/cache/*
 !src/public/data/cache/.gitkeep
+.claude/
