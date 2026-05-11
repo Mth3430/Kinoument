@@ -27,206 +27,75 @@ async function ollamaGenerate(prompt, timeout = null) {
   return data.response || ''
 }
 
-// Extract keywords from proposal - very strict
-async function extractProposalKeywords(proposalText) {
-  const stopWords = new Set([
-    'le', 'la', 'les', 'de', 'du', 'des', 'et', 'ou', 'un', 'une', 'à', 'pour', 'par',
-    'en', 'au', 'aux', 'avec', 'sans', 'sur', 'sous', 'dans', 'entre', 'vers',
-    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'of', 'to', 'from', 'with',
-    // Add generic/structural words
-    'article', 'projet', 'loi', 'amendement', 'examen', 'prioritaire', 'disposition',
-    'dispositions', 'texte', 'rapport', 'commission', 'vote', 'votes', 'lassemblee',
-    'assemblee', 'nationale', 'senat', 'chambre', 'lecture', 'premiere', 'deuxieme',
-    'propose', 'proposition', 'cet', 'cette', 'ces', 'celui', 'celle', 'ceux',
-    'est', 'sont', 'stre', 'etre', 'pas', 'plus', 'autre', 'autres'
-  ])
-
-  const words = proposalText
-    .toLowerCase()
-    .replace(/[^\w\s]/g, ' ')
-    .split(/\s+/)
-    .filter(w => w.length > 4 && !stopWords.has(w))
-
-  const freq = {}
-  words.forEach(w => {
-    freq[w] = (freq[w] || 0) + 1
-  })
-
-  const keywords = Object.entries(freq)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 15)
-    .map(([word]) => word)
-
-  return keywords
-}
-
-// Find matching votes: keyword pre-filter, then AI validation. If nothing found, send all votes to AI
+// STRICT HEURISTIC MATCHING - NO AI
+// Better to return 0 votes than wrong votes
 async function findMatchingVotes(proposalText, allVotes, themes = []) {
   if (!allVotes || allVotes.length === 0) return []
 
-  // Extract keywords from proposal text
-  const keywords = await extractProposalKeywords(proposalText)
-
-  // Also add theme names as keywords
+  // Filter out party names - only real policy themes
   const partyNames = new Set([
     'renaissance', 'rassemblement national', 'la france insoumise', 'les républicains',
     'socialistes et apparentés', 'socialistes', 'europe écologie les verts', 'verts',
     'parti communiste', 'communiste', 'reconquête', 're', 'ps', 'lfi', 'rn', 'eelv', 'pcf'
   ])
 
-  const themeKeywords = []
-  themes.forEach(t => {
+  const realThemes = themes.filter(t => {
     const themeName = (t.name || t).toLowerCase().trim()
-    if (!partyNames.has(themeName) && themeName.length > 3) {
-      themeKeywords.push(themeName)
-    }
+    return !partyNames.has(themeName) && themeName.length > 3
   })
 
-  const allKeywords = [...keywords, ...themeKeywords]
+  // CRITICAL: Without themes, we can't match reliably
+  if (realThemes.length === 0) return []
 
-  // Step 1: Try pre-filter with keywords
-  let candidateVotes = []
-  if (allKeywords.length > 0) {
-    candidateVotes = allVotes
-      .map((vote, idx) => {
-        const voteText = (
-          (vote.titre || '') + ' ' +
-          (vote.objet || '') + ' ' +
-          (vote.amendmentDescription || '')
-        ).toLowerCase()
+  // Build theme keywords - EXACT matching only
+  const themeKeywords = new Set()
+  realThemes.forEach(t => {
+    const themeName = (t.name || t).toLowerCase()
+    themeKeywords.add(themeName)
+    themeName.split(/\s+/).forEach(word => {
+      if (word.length > 3) themeKeywords.add(word)
+    })
+  })
 
-        const matchCount = allKeywords.filter(kw => voteText.includes(kw)).length
-        return { vote, idx, matchCount }
-      })
-      .filter(item => item.matchCount > 0)
-      .sort((a, b) => b.matchCount - a.matchCount)
-      .slice(0, 50)
-  }
+  console.log(`[findMatchingVotes] Theme keywords: ${Array.from(themeKeywords).join(', ')}`)
 
-  // If keywords found votes, score each one and keep only high-confidence matches
-  if (candidateVotes.length > 0) {
-    const votesList = candidateVotes
-      .map((item, i) => {
-        const vote = item.vote
-        // Include ALL available information
-        const fullDesc = [
-          vote.titre || '',
-          vote.objet || '',
-          vote.amendmentDescription || '',
-          vote.sort ? `(Résultat: ${vote.sort})` : ''
-        ]
-          .filter(x => x)
-          .join('\n')
+  // STRICT MATCHING RULES
+  const matchingVotes = allVotes
+    .map(vote => {
+      const voteText = (
+        (vote.titre || '') + ' ' +
+        (vote.objet || '') + ' ' +
+        (vote.amendmentDescription || '')
+      ).toLowerCase()
 
-        return `${i}. ${fullDesc}`
-      })
-      .join('\n\n---\n\n')
+      // COUNT: How many theme keywords does this vote mention?
+      const themeMatchCount = [...themeKeywords].filter(kw => voteText.includes(kw)).length
 
-    const aiScoringPrompt = `PROPOSITION À ANALYSER:
-"${proposalText}"
+      // REQUIREMENT: Must mention theme keywords (minimum 1)
+      if (themeMatchCount === 0) return null
 
-VOTES/AMENDEMENTS À ÉVALUER (information complète):
-${votesList}
-
-TÂCHE: Pour CHAQUE vote, donne un score de pertinence de 0-10.
-- 8-10: Vote adresse EXACTEMENT le même sujet
-- 5-7: Vote partagent un domaine mais sujet différent
-- 0-4: Vote sans rapport
-
-Format de réponse: "0:8 1:3 2:9 3:2" (index:score)`
-
-    try {
-      const aiResponse = await ollamaGenerate(aiScoringPrompt)
-      const scores = new Map()
-
-      // Parse the response format "0:8 1:3 2:9"
-      const matches = aiResponse.matchAll(/(\d+):(\d+)/g)
-      for (const match of matches) {
-        const idx = parseInt(match[1])
-        const score = parseInt(match[2])
-        scores.set(idx, score)
-      }
-
-      // Keep only votes with score >= 8
-      const selectedVotes = []
-      scores.forEach((score, idx) => {
-        if (score >= 8 && candidateVotes[idx]) {
-          selectedVotes.push(candidateVotes[idx].vote)
-        }
-      })
-
-      if (selectedVotes.length > 0) {
-        return selectedVotes.slice(0, 15)
-      }
-    } catch (err) {
-      console.log(`[findMatchingVotes] AI scoring failed:`, err.message)
-    }
-  }
-
-  // Step 2: No votes found with keywords - score sample of votes
-  console.log(`[findMatchingVotes] No keyword matches, sampling votes for scoring...`)
-
-  // Take a sample of 100 votes
-  const sampleSize = Math.min(100, allVotes.length)
-  const sampleVotes = allVotes.slice(0, sampleSize)
-
-  const votesList = sampleVotes
-    .map((vote, idx) => {
-      // Include ALL available information
-      const fullDesc = [
-        vote.titre || '',
-        vote.objet || '',
-        vote.amendmentDescription || '',
-        vote.sort ? `(Résultat: ${vote.sort})` : ''
+      // REJECTION: List of completely unrelated domains - if vote mentions these, reject it
+      const rejectDomains = [
+        'agriculture', 'agroalimentaire', 'élevage', 'culture', 'art', 'cinéma',
+        'inflation', 'marges', 'prix', 'commerce', 'textile', 'sport', 'plein emploi'
       ]
-        .filter(x => x)
-        .join('\n')
 
-      return `${idx}. ${fullDesc}`
-    })
-    .join('\n\n---\n\n')
+      const hasRejectKeyword = rejectDomains.some(domain => voteText.includes(domain))
 
-  const aiScoringPrompt = `PROPOSITION À ANALYSER:
-"${proposalText}"
-
-VOTES/AMENDEMENTS (sample de ${sampleSize} votes - information complète):
-${votesList}
-
-TÂCHE: Pour CHAQUE vote, donne un score de pertinence de 0-10.
-- 8-10: Vote adresse EXACTEMENT le même sujet
-- 5-7: Vote partage un domaine mais sujet différent
-- 0-4: Vote sans rapport
-
-Format de réponse: "0:8 1:3 2:9 3:2" (index:score)`
-
-  try {
-    const aiResponse = await ollamaGenerate(aiScoringPrompt)
-    const scores = new Map()
-
-    // Parse the response format "0:8 1:3 2:9"
-    const matches = aiResponse.matchAll(/(\d+):(\d+)/g)
-    for (const match of matches) {
-      const idx = parseInt(match[1])
-      const score = parseInt(match[2])
-      scores.set(idx, score)
-    }
-
-    // Keep only votes with score >= 8
-    const selectedVotes = []
-    scores.forEach((score, idx) => {
-      if (score >= 8 && sampleVotes[idx]) {
-        selectedVotes.push(sampleVotes[idx])
+      // If vote mentions unrelated domain AND low theme match, reject
+      if (hasRejectKeyword && themeMatchCount <= 1) {
+        return null
       }
+
+      return { vote, themeMatchCount }
     })
+    .filter(v => v !== null)
+    .sort((a, b) => b.themeMatchCount - a.themeMatchCount)
+    .slice(0, 10)
+    .map(item => item.vote)
 
-    if (selectedVotes.length > 0) {
-      return selectedVotes.slice(0, 15)
-    }
-  } catch (err) {
-    console.log(`[findMatchingVotes] Sample scoring failed:`, err.message)
-  }
-
-  return []
+  console.log(`[findMatchingVotes] Found ${matchingVotes.length} votes (strict heuristics)`)
+  return matchingVotes
 }
 
 // Enrich matching votes with amendment descriptions
@@ -295,7 +164,6 @@ Réponds par UN SEUL MOT:
 }
 
 // Fallback analysis when amendment alignment cannot be determined
-// Deep AI analysis - STRICT: always use AI, no fallback heuristics
 async function aiBasedAnalysis(proposal, matchingVotes) {
   if (!matchingVotes || matchingVotes.length === 0) {
     return { status: 'unknown', explanation: 'Aucun vote correspondant à cette proposition.' }
@@ -395,22 +263,13 @@ async function analyzeConsistency(proposal, matchingVotes, partyGroup, groupsMap
     const batch = votesToAnalyzeMax.slice(i, i + BATCH_SIZE)
     const batchResults = await Promise.allSettled(
       batch.map(async ({ vote, partyVote }) => {
-        const amendmentDesc = vote.amendmentDescription || vote.amendementDescription || vote.titre
-        const alignment = await analyzeAmendmentAlignment(proposalText, amendmentDesc)
-
-        // Si alignment est déterminé, l'utiliser. Sinon, utiliser la position du vote
-        let isCoherent = null
-        if (alignment) {
-          isCoherent = (alignment === 'aligned' && partyVote === 'pour') ||
-                       (alignment === 'opposed' && partyVote === 'contre')
-        } else {
-          // Indéterminé: pour = cohérent (vert), contre = incohérent (rouge), abstention = null
-          isCoherent = partyVote === 'pour' ? true : partyVote === 'contre' ? false : null
-        }
+        // Simple logic: POUR = coherent, CONTRE = incoherent
+        // If vote matched with proposition by theme, the party vote determines coherence
+        let isCoherent = partyVote === 'pour' ? true : partyVote === 'contre' ? false : null
 
         return {
           partyVote,
-          alignment,
+          alignment: null,
           vote,
           isCoherent
         }
@@ -562,20 +421,30 @@ export async function compareProposal(proposal, partyGroup) {
 
     const enrichedVotes = matchingVotes
 
-    // Analyze consistency based on these votes
-    const { status, explanation, relatedVotes = [] } = await analyzeConsistency(
-      proposalText,
-      enrichedVotes,
-      partyGroup,
-      groupsMap,
-      themes
-    )
-
-    // Enrich votes with group details - afficher SEULEMENT le groupe du parti
-    const relatedWithGroups = relatedVotes.map((vote) => {
+    // Simple logic: Find party position in each vote and determine coherence
+    const relatedWithGroups = enrichedVotes.map((vote) => {
       const groupMatch = (vote.groupes || []).find((g) => g.organeRef === partyGroup)
+      const partyVote = groupMatch?.positionMajoritaire
+
+      // Coherence: POUR = respected, CONTRE = notRespected
+      let status = 'unknown'
+      let explanation = ''
+
+      if (partyVote === 'pour') {
+        status = 'respected'
+        explanation = 'Le parti a voté pour cette proposition.'
+      } else if (partyVote === 'contre') {
+        status = 'notRespected'
+        explanation = 'Le parti a voté contre cette proposition.'
+      } else {
+        status = 'unknown'
+        explanation = 'Abstention ou position indéterminée.'
+      }
+
       return {
         ...vote,
+        status,
+        explanation,
         amendmentNumber: vote.amendementNumero,
         amendmentDescription: vote.amendmentDescription,
         groupDetails: groupMatch ? [{
@@ -586,12 +455,33 @@ export async function compareProposal(proposal, partyGroup) {
       }
     })
 
+    // Determine overall status from votes
+    const statuses = relatedWithGroups.map(v => v.status).filter(s => s !== 'unknown')
+    const respected = statuses.filter(s => s === 'respected').length
+    const notRespected = statuses.filter(s => s === 'notRespected').length
+
+    let overallStatus = 'unknown'
+    let overallExplanation = ''
+
+    if (statuses.length > 0) {
+      if (respected > notRespected) {
+        overallStatus = 'respected'
+        overallExplanation = `Le parti a voté pour cette proposition dans ${respected}/${statuses.length} votes.`
+      } else if (notRespected > respected) {
+        overallStatus = 'notRespected'
+        overallExplanation = `Le parti a voté contre cette proposition dans ${notRespected}/${statuses.length} votes.`
+      } else {
+        overallStatus = 'mitigated'
+        overallExplanation = `Le parti est divisé: ${respected} votes pour et ${notRespected} votes contre.`
+      }
+    }
+
     return {
-      status,
-      explanation,
+      status: overallStatus,
+      explanation: overallExplanation,
       relatedVotes: relatedWithGroups,
       relatedVotesCount: relatedWithGroups.length,
-      usedOllama: true,
+      usedOllama: false,
       title: proposalTitle,
       description: proposalDescription,
     }

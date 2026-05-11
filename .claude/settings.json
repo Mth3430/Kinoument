@@ -90,7 +90,8 @@
       "Bash(curl -X DELETE http://localhost:3000/api/cache)",
       "Bash(pkill -f \"node.*next\")",
       "PowerShell(Stop-Process -Name node -Force -ErrorAction SilentlyContinue)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(pkill -f \"npm.*dev\")"
     ],
     "additionalDirectories": [
       "\\tmp",
