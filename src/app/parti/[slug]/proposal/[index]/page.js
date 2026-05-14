@@ -99,7 +99,7 @@ export default function ProposalDetailPage() {
         onLanguageChange={setLanguage}
       />
       <main style={{
-        padding: '2rem',
+        padding: 'clamp(1rem, 5vw, 2rem)',
         fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
         background: bgColor,
         minHeight: '100vh',
@@ -386,15 +386,16 @@ export default function ProposalDetailPage() {
               alignItems: 'center',
               justifyContent: 'center',
               zIndex: 1000,
-              padding: '1rem',
+              padding: 'clamp(0.5rem, 3vw, 1rem)',
+              overflowY: 'auto',
             }}>
               <div style={{
                 background: cardBg,
                 borderRadius: '12px',
-                padding: '2rem',
-                maxWidth: '800px',
-                maxHeight: '80vh',
-                overflow: 'auto',
+                padding: 'clamp(1rem, 4vw, 2rem)',
+                maxWidth: 'clamp(320px, 90vw, 800px)',
+                maxHeight: '90vh',
+                overflowY: 'auto',
                 color: textColor,
               }}>
                 <h2 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1.3rem', fontWeight: '600' }}>

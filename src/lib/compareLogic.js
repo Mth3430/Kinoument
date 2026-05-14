@@ -299,11 +299,14 @@ async function analyzeConsistency(proposal, matchingVotes, partyGroup, groupsMap
   })
 
   // Enrichir matchingVotes avec les infos de cohérence
-  const enrichedMatchingVotes = matchingVotes.map(vote => ({
-    ...vote,
-    isCoherent: coherenceMap.get(vote.numero)?.isCoherent,
-    alignment: coherenceMap.get(vote.numero)?.alignment
-  }))
+  const enrichedMatchingVotes = matchingVotes.map(vote => {
+    const coherenceInfo = coherenceMap.get(vote.numero)
+    return {
+      ...vote,
+      isCoherent: coherenceInfo?.isCoherent ?? null,
+      alignment: coherenceInfo?.alignment ?? null
+    }
+  })
 
   const coherentVotes = enrichedMatchingVotes.filter(v => v.isCoherent === true)
   const incoherentVotes = enrichedMatchingVotes.filter(v => v.isCoherent === false)
