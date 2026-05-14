@@ -10,11 +10,23 @@ export default function PollChart({ darkMode }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [lastUpdate, setLastUpdate] = useState(null)
+  const [isMobile, setIsMobile] = useState(false)
 
   const bgColor = darkMode ? '#111827' : '#f9fafb'
   const textColor = darkMode ? '#f3f4f6' : '#1f2937'
   const borderColor = darkMode ? '#374151' : '#e5e7eb'
   const secondaryText = darkMode ? '#d1d5db' : '#6b7280'
+
+  useEffect(() => {
+    // Détecter si c'est mobile
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     const fetchPolls = async () => {
@@ -110,15 +122,15 @@ export default function PollChart({ darkMode }) {
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={isMobile ? 250 : 350}>
           <PieChart>
             <Pie
               data={pollData.data}
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={({ name, value }) => `${name} ${value}%`}
-              outerRadius={80}
+              label={isMobile ? false : ({ name, value }) => `${name} ${value}%`}
+              outerRadius={isMobile ? 60 : 80}
               fill="#8884d8"
               dataKey="value"
               onClick={(_, index) => handlePartyClick(pollData.data[index].slug)}
@@ -151,9 +163,9 @@ export default function PollChart({ darkMode }) {
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-        gap: '0.75rem',
-        fontSize: '0.85rem',
+        gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(150px, 1fr))',
+        gap: 'clamp(0.5rem, 2vw, 0.75rem)',
+        fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
         color: secondaryText,
         borderTop: `1px solid ${borderColor}`,
         paddingTop: '1rem',
