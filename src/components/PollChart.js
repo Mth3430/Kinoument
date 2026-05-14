@@ -108,8 +108,8 @@ export default function PollChart({ darkMode }) {
       background: bgColor,
       border: `1px solid ${borderColor}`,
       borderRadius: '8px',
-      padding: '1.5rem',
-      marginBottom: '2rem',
+      padding: isMobile ? '1rem' : '1.5rem',
+      marginBottom: isMobile ? '1.5rem' : '2rem',
     }}>
       <div style={{ marginBottom: '1rem' }}>
         <h2 style={{ color: textColor, fontSize: '1.3rem', fontWeight: '600', margin: '0 0 0.5rem 0' }}>
@@ -122,7 +122,7 @@ export default function PollChart({ darkMode }) {
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-        <ResponsiveContainer width="100%" height={isMobile ? 250 : 350}>
+        <ResponsiveContainer width="100%" height={isMobile ? 180 : 350}>
           <PieChart>
             <Pie
               data={pollData.data}
@@ -130,7 +130,7 @@ export default function PollChart({ darkMode }) {
               cy="50%"
               labelLine={false}
               label={isMobile ? false : ({ name, value }) => `${name} ${value}%`}
-              outerRadius={isMobile ? 60 : 80}
+              outerRadius={isMobile ? 45 : 80}
               fill="#8884d8"
               dataKey="value"
               onClick={(_, index) => handlePartyClick(pollData.data[index].slug)}
