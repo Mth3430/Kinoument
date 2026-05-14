@@ -4,14 +4,14 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const PARTIES = [
-  { name: 'Renaissance', slug: 'renaissance', group: 'PO800538' },
-  { name: 'Rassemblement National', slug: 'rassemblement-national', group: 'PO800520' },
+  { name: 'EELV', slug: 'europe-ecologie-les-verts', group: 'PO800526' },
   { name: 'La France Insoumise', slug: 'la-france-insoumise', group: 'PO800490' },
   { name: 'Les Républicains', slug: 'les-republicains', group: 'PO800508' },
-  { name: 'Socialistes et apparentés', slug: 'parti-socialiste', group: 'PO800496' },
-  { name: 'EELV', slug: 'europe-ecologie-les-verts', group: 'PO800526' },
   { name: 'Parti Communiste', slug: 'parti-communiste-francais', group: 'PO800502' },
+  { name: 'Rassemblement National', slug: 'rassemblement-national', group: 'PO800520' },
   { name: 'Reconquête', slug: 'reconquete', group: 'PO800532' },
+  { name: 'Renaissance', slug: 'renaissance', group: 'PO800538' },
+  { name: 'Socialistes et apparentés', slug: 'parti-socialiste', group: 'PO800496' },
 ]
 
 export default function Navigation({ darkMode, onDarkModeChange, language, onLanguageChange }) {
