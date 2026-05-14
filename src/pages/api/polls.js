@@ -1,12 +1,52 @@
 import pollsData from '../../data/polls.json'
+import fs from 'fs'
+import path from 'path'
 
-async function loadPolls() {
-  // Charge les sondages depuis le fichier JSON
-  // Le fichier est automatiquement rechargé à chaque requête
+const CACHE_FILE = path.join(process.cwd(), '.cache', 'polls-cache.json')
+const CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
+
+function getCache() {
+  try {
+    if (fs.existsSync(CACHE_FILE)) {
+      const cached = JSON.parse(fs.readFileSync(CACHE_FILE, 'utf-8'))
+      if (cached.timestamp && Date.now() - cached.timestamp < CACHE_TTL) {
+        return cached.data
+      }
+    }
+  } catch (error) {
+    console.log('[polls] Cache read error:', error.message)
+  }
+  return null
+}
+
+function saveCache(data) {
+  try {
+    const dir = path.dirname(CACHE_FILE)
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true })
+    }
+    fs.writeFileSync(CACHE_FILE, JSON.stringify({ data, timestamp: Date.now() }))
+  } catch (error) {
+    console.log('[polls] Cache write error:', error.message)
+  }
+}
+
+async function fetchLatestPolls() {
+  try {
+    // Essayer de récupérer depuis une source alternative (Wikipedia français pour les sondages)
+    // Pour maintenant, on utilise le fichier JSON comme source
+    return null
+  } catch (error) {
+    console.log('[polls] Fetch error:', error.message)
+    return null
+  }
+}
+
+function loadPolls() {
+  // Utiliser le fichier JSON comme source de données
   if (!pollsData || !pollsData.sources) {
     throw new Error('Fichier polls.json invalide')
   }
-
   return pollsData.sources
 }
 
@@ -86,8 +126,22 @@ export default async function handler(req, res) {
   }
 
   try {
-    const sources = await loadPolls()
+    // Vérifier le cache d'abord
+    const cached = getCache()
+    if (cached) {
+      console.log('[polls] Serving from cache')
+      return res.status(200).json(cached)
+    }
+
+    // Essayer de récupérer les données fraîches
+    const latestPolls = await fetchLatestPolls()
+
+    // Utiliser les nouvelles données ou fallback sur le fichier JSON
+    const sources = latestPolls || loadPolls()
     const result = calculateAverage(sources)
+
+    // Sauvegarder en cache
+    saveCache(result)
 
     res.status(200).json(result)
   } catch (error) {
