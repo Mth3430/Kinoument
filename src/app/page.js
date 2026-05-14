@@ -43,14 +43,14 @@ export default function Home() {
   const t = translations[language]
 
   const parties = [
-    { name: 'Renaissance', slug: 'renaissance', group: 'PO800538', description: language === 'fr' ? 'Renaissance est le parti d\'Emmanuel Macron, axé sur des politiques centristes, l\'intégration européenne et la modernisation économique.' : 'Renaissance is the party of Emmanuel Macron, focusing on centrist policies, European integration, and economic modernization.' },
-    { name: 'Rassemblement National', slug: 'rassemblement-national', group: 'PO800520', description: language === 'fr' ? 'Rassemblement National, anciennement Front National, est un parti d\'extrême droite mettant l\'accent sur la souveraineté nationale, le contrôle de l\'immigration et l\'euroscepticisme.' : 'Rassemblement National, formerly National Front, is a far-right party emphasizing national sovereignty, immigration control, and Euroscepticism.' },
+    { name: 'Europe Écologie Les Verts', slug: 'europe-ecologie-les-verts', group: 'PO800526', description: language === 'fr' ? 'Europe Écologie Les Verts est un parti écologiste dédié à la transition écologique, au développement durable et aux politiques vertes.' : 'Europe Écologie Les Verts is an environmentalist party dedicated to ecological transition, sustainable development, and green policies.' },
     { name: 'La France Insoumise', slug: 'la-france-insoumise', group: 'PO800490', description: language === 'fr' ? 'La France Insoumise est un parti populiste de gauche dirigé par Jean-Luc Mélenchon, promouvant la justice sociale, l\'environnementalisme et l\'anti-capitalisme.' : 'La France Insoumise is a left-wing populist party led by Jean-Luc Mélenchon, promoting social justice, environmentalism, and anti-capitalism.' },
     { name: 'Les Républicains', slug: 'les-republicains', group: 'PO800508', description: language === 'fr' ? 'Les Républicains est un parti de centre-droit défendant les valeurs traditionnelles, le libéralisme économique et une défense nationale forte.' : 'Les Républicains is a center-right party advocating for traditional values, economic liberalism, and strong national defense.' },
-    { name: 'Socialistes et apparentés', slug: 'parti-socialiste', group: 'PO800496', description: language === 'fr' ? 'Socialistes et apparentés est le groupe parlementaire de gauche rassemblant le Parti Socialiste et ses alliés, engagé pour le bien-être social, les droits des travailleurs et les réformes progressistes.' : 'Socialistes et apparentés is the left-wing parliamentary group bringing together the Socialist Party and its allies, committed to social welfare, labor rights, and progressive reforms.' },
-    { name: 'Europe Écologie Les Verts', slug: 'europe-ecologie-les-verts', group: 'PO800526', description: language === 'fr' ? 'Europe Écologie Les Verts est un parti écologiste dédié à la transition écologique, au développement durable et aux politiques vertes.' : 'Europe Écologie Les Verts is an environmentalist party dedicated to ecological transition, sustainable development, and green policies.' },
     { name: 'Parti Communiste', slug: 'parti-communiste-francais', group: 'PO800502', description: language === 'fr' ? 'Parti Communiste est un parti communiste défendant les droits des travailleurs, l\'anti-impérialisme et la transformation socialiste.' : 'Parti Communiste is a communist party advocating for workers\' rights, anti-imperialism, and socialist transformation.' },
+    { name: 'Rassemblement National', slug: 'rassemblement-national', group: 'PO800520', description: language === 'fr' ? 'Rassemblement National, anciennement Front National, est un parti d\'extrême droite mettant l\'accent sur la souveraineté nationale, le contrôle de l\'immigration et l\'euroscepticisme.' : 'Rassemblement National, formerly National Front, is a far-right party emphasizing national sovereignty, immigration control, and Euroscepticism.' },
     { name: 'Reconquête', slug: 'reconquete', group: 'PO800532', description: language === 'fr' ? 'Reconquête est un parti de droite populiste dirigé par Éric Zemmour, axé sur la souveraineté nationale et les politiques identitaires.' : 'Reconquête is a right-wing populist party led by Éric Zemmour, focusing on national sovereignty and identity politics.' },
+    { name: 'Renaissance', slug: 'renaissance', group: 'PO800538', description: language === 'fr' ? 'Renaissance est le parti d\'Emmanuel Macron, axé sur des politiques centristes, l\'intégration européenne et la modernisation économique.' : 'Renaissance is the party of Emmanuel Macron, focusing on centrist policies, European integration, and economic modernization.' },
+    { name: 'Socialistes et apparentés', slug: 'parti-socialiste', group: 'PO800496', description: language === 'fr' ? 'Socialistes et apparentés est le groupe parlementaire de gauche rassemblant le Parti Socialiste et ses alliés, engagé pour le bien-être social, les droits des travailleurs et les réformes progressistes.' : 'Socialistes et apparentés is the left-wing parliamentary group bringing together the Socialist Party and its allies, committed to social welfare, labor rights, and progressive reforms.' },
   ]
 
   useEffect(() => {
@@ -351,6 +351,11 @@ export default function Home() {
           </p>
           <p style={{ margin: '0.5rem 0' }}>
             Les résultats dépendent de la qualité des sondages et de l'analyse sémantique de l'IA.
+          </p>
+          <p style={{ margin: '1rem 0 0 0' }}>
+            <Link href="/mentions-legales" style={{ color: '#3b82f6', textDecoration: 'none' }}>
+              Mentions légales
+            </Link>
           </p>
         </div>
       </section>

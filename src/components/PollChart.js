@@ -123,6 +123,7 @@ export default function PollChart({ darkMode }) {
               dataKey="value"
               onClick={(_, index) => handlePartyClick(pollData.data[index].slug)}
               style={{ cursor: 'pointer' }}
+              isAnimationActive={false}
             >
               {pollData.data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.fill} />
