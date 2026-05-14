@@ -30,22 +30,23 @@ export default function Navigation({ darkMode, onDarkModeChange, language, onLan
     <nav style={{
       background: bgColor,
       borderBottom: `1px solid ${borderColor}`,
-      padding: '0.75rem 1rem',
+      padding: 'clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1rem)',
       display: 'flex',
       alignItems: 'center',
-      gap: '0.5rem',
+      gap: 'clamp(0.25rem, 2vw, 0.5rem)',
       color: textColor,
       userSelect: 'none',
+      flexWrap: 'wrap',
     }}>
       <Link href="/">
         <button style={{
-          padding: '0.5rem 1rem',
+          padding: 'clamp(0.4rem, 2vw, 0.5rem) clamp(0.75rem, 3vw, 1rem)',
           background: pathname === '/' ? activeBg : hoverBg,
           color: pathname === '/' ? 'white' : textColor,
           border: 'none',
           borderRadius: '4px',
           cursor: 'pointer',
-          fontSize: '0.9rem',
+          fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
           fontWeight: pathname === '/' ? '600' : '500',
           whiteSpace: 'nowrap',
           transition: 'all 0.2s',
@@ -80,13 +81,13 @@ export default function Navigation({ darkMode, onDarkModeChange, language, onLan
           return (
             <Link key={party.slug} href={`/parti/${party.slug}`}>
               <button style={{
-                padding: '0.5rem 0.875rem',
+                padding: 'clamp(0.4rem, 2vw, 0.5rem) clamp(0.6rem, 2vw, 0.875rem)',
                 background: isActive ? activeBg : 'transparent',
                 color: isActive ? 'white' : textColor,
                 border: 'none',
                 borderRadius: '4px',
                 cursor: 'pointer',
-                fontSize: '0.85rem',
+                fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
                 fontWeight: isActive ? '600' : '500',
                 whiteSpace: 'nowrap',
                 transition: 'all 0.2s',
@@ -107,42 +108,42 @@ export default function Navigation({ darkMode, onDarkModeChange, language, onLan
 
       <div style={{ width: '1px', height: '1.5rem', background: borderColor, margin: '0 0.25rem' }} />
 
-      <div style={{ display: 'flex', gap: '0.25rem', flexShrink: 0 }}>
+      <div style={{ display: 'flex', gap: 'clamp(0.2rem, 1vw, 0.25rem)', flexShrink: 0 }}>
         <button onClick={() => onLanguageChange('fr')} disabled={language === 'fr'} style={{
-          padding: '0.5rem 0.75rem',
+          padding: 'clamp(0.4rem, 2vw, 0.5rem) clamp(0.5rem, 2vw, 0.75rem)',
           background: language === 'fr' ? buttonActiveBg : buttonBg,
           color: language === 'fr' ? 'white' : textColor,
           border: 'none',
           borderRadius: '4px',
           cursor: language === 'fr' ? 'default' : 'pointer',
           fontWeight: '500',
-          fontSize: '0.85rem',
+          fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
           transition: 'background 0.2s',
         }}>
           FR
         </button>
         <button onClick={() => onLanguageChange('en')} disabled={language === 'en'} style={{
-          padding: '0.5rem 0.75rem',
+          padding: 'clamp(0.4rem, 2vw, 0.5rem) clamp(0.5rem, 2vw, 0.75rem)',
           background: language === 'en' ? buttonActiveBg : buttonBg,
           color: language === 'en' ? 'white' : textColor,
           border: 'none',
           borderRadius: '4px',
           cursor: language === 'en' ? 'default' : 'pointer',
           fontWeight: '500',
-          fontSize: '0.85rem',
+          fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
           transition: 'background 0.2s',
         }}>
           EN
         </button>
         <button onClick={() => onDarkModeChange(!darkMode)} style={{
-          padding: '0.5rem 0.75rem',
+          padding: 'clamp(0.4rem, 2vw, 0.5rem) clamp(0.5rem, 2vw, 0.75rem)',
           background: buttonBg,
           color: textColor,
           border: 'none',
           borderRadius: '4px',
           cursor: 'pointer',
           fontWeight: '500',
-          fontSize: '0.85rem',
+          fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
           transition: 'background 0.2s',
         }}
         onMouseEnter={(e) => e.target.style.background = hoverBg}

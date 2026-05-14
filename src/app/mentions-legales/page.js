@@ -72,7 +72,7 @@ export default function MentionsLegales() {
         onLanguageChange={setLanguage}
       />
       <main style={{
-        padding: '2rem',
+        padding: 'clamp(1rem, 5vw, 2rem)',
         fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
         background: bgColor,
         minHeight: '100vh',

@@ -106,14 +106,14 @@ export default function Home() {
         onLanguageChange={setLanguage}
       />
       <main style={{
-        padding: '2rem',
+        padding: 'clamp(1rem, 5vw, 2rem)',
         fontFamily: 'system-ui, sans-serif',
         background: bgColor,
         minHeight: '100vh',
         color: textColor,
         transition: 'background 0.3s, color 0.3s',
       }}>
-      <h1 style={{ color: textColor, fontSize: '3rem', fontWeight: '800', marginBottom: '2rem', textAlign: 'left' }}>
+      <h1 style={{ color: textColor, fontSize: 'clamp(1.75rem, 8vw, 3rem)', fontWeight: '800', marginBottom: 'clamp(1rem, 4vw, 2rem)', textAlign: 'left' }}>
         Kinoument
       </h1>
       <PollChart darkMode={darkMode} />
@@ -154,10 +154,10 @@ export default function Home() {
         </div>
       )}
 
-      <h2 style={{ color: textColor, fontSize: '1.5rem', fontWeight: '600', marginBottom: '1.5rem' }}>
+      <h2 style={{ color: textColor, fontSize: 'clamp(1.25rem, 5vw, 1.5rem)', fontWeight: '600', marginBottom: 'clamp(1rem, 4vw, 1.5rem)' }}>
         {t.selectParty}
       </h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(clamp(280px, 90vw, 300px), 1fr))', gap: 'clamp(0.75rem, 3vw, 1rem)' }}>
         {parties.map((party) => {
           const ps = partiesStatus.find((p) => p.slug === party.slug)
           const isReady = ps?.status === 'ready'
@@ -228,8 +228,8 @@ export default function Home() {
       </div>
 
       <section style={{
-        marginTop: '4rem',
-        padding: '2rem',
+        marginTop: 'clamp(2rem, 8vw, 4rem)',
+        padding: 'clamp(1rem, 5vw, 2rem)',
         background: cardBg,
         border: `1px solid ${cardBorder}`,
         borderRadius: '8px',

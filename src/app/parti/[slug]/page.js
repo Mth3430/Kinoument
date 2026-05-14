@@ -170,7 +170,7 @@ export default function PartyPage() {
         onLanguageChange={setLanguage}
       />
       <main style={{
-        padding: '2rem',
+        padding: 'clamp(1rem, 5vw, 2rem)',
         fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
         background: bgColor,
         minHeight: '100vh',
@@ -179,12 +179,12 @@ export default function PartyPage() {
       }}>
 
       <h1 style={{
-        fontSize: '2.5rem',
+        fontSize: 'clamp(1.75rem, 8vw, 2.5rem)',
         fontWeight: '700',
-        margin: '2rem 0 0.5rem 0',
+        margin: 'clamp(1rem, 4vw, 2rem) 0 0.5rem 0',
         color: textColor,
       }}>{party.name}</h1>
-      <p style={{ color: secondaryText, marginBottom: '2rem', fontSize: '1rem' }}>
+      <p style={{ color: secondaryText, marginBottom: 'clamp(1rem, 4vw, 2rem)', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
         Analyse comparative avec les votes de l'Assemblée Nationale
       </p>
 
@@ -238,10 +238,10 @@ export default function PartyPage() {
             </div>
           )}
 
-          <h2 style={{ color: textColor, fontSize: '1.5rem', fontWeight: '600', marginBottom: '1.5rem' }}>
+          <h2 style={{ color: textColor, fontSize: 'clamp(1.25rem, 5vw, 1.5rem)', fontWeight: '600', marginBottom: 'clamp(1rem, 4vw, 1.5rem)' }}>
             {t.comparativeAnalysis} ({displayedCount}/{filteredComparisons.length})
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(clamp(280px, 90vw, 340px), 1fr))', gap: 'clamp(1rem, 3vw, 1.5rem)' }}>
             {filteredComparisons.slice(0, displayedCount).map((item) => {
               const actualIndex = comparisons.findIndex(c => c === item)
               return (
