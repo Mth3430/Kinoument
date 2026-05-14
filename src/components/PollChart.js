@@ -122,7 +122,7 @@ export default function PollChart({ darkMode }) {
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-        <ResponsiveContainer width="100%" height={isMobile ? 180 : 350}>
+        <ResponsiveContainer width="100%" height={isMobile ? 280 : 350}>
           <PieChart>
             <Pie
               data={pollData.data}
