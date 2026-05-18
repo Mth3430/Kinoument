@@ -2,8 +2,8 @@ import { getVotes } from './votesCache'
 import { getAmendmentText } from './amendmentsCache'
 import { getGroupsMap } from './groupsCache'
 
-const OLLAMA_URL = 'http://localhost:11434/api/generate'
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3'
+const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434/api/generate'
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'mistral'
 
 async function ollamaGenerate(prompt, timeout = null) {
   const fetchOptions = {
