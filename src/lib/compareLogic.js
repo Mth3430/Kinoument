@@ -5,8 +5,10 @@ import { getGroupsMap } from './groupsCache'
 const OLLAMA_URL = 'http://localhost:11434/api/generate'
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3'
 
-async function ollamaGenerate(prompt, timeout = null) {
-  const fetchOptions = {
+const OLLAMA_TIMEOUT_MS = Number(process.env.OLLAMA_TIMEOUT_MS) || 60000
+
+async function ollamaGenerate(prompt, timeout = OLLAMA_TIMEOUT_MS) {
+  const res = await fetch(OLLAMA_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -14,14 +16,8 @@ async function ollamaGenerate(prompt, timeout = null) {
       prompt,
       stream: false
     }),
-  }
-
-  // Only add timeout if specified
-  if (timeout !== null) {
-    fetchOptions.signal = AbortSignal.timeout(timeout)
-  }
-
-  const res = await fetch(OLLAMA_URL, fetchOptions)
+    signal: AbortSignal.timeout(timeout),
+  })
   if (!res.ok) throw new Error('Ollama unavailable')
   const data = await res.json()
   return data.response || ''
@@ -458,33 +454,20 @@ export async function compareProposal(proposal, partyGroup) {
       }
     })
 
-    // Determine overall status from votes
-    const statuses = relatedWithGroups.map(v => v.status).filter(s => s !== 'unknown')
-    const respected = statuses.filter(s => s === 'respected').length
-    const notRespected = statuses.filter(s => s === 'notRespected').length
-
-    let overallStatus = 'unknown'
-    let overallExplanation = ''
-
-    if (statuses.length > 0) {
-      if (respected > notRespected) {
-        overallStatus = 'respected'
-        overallExplanation = `Le parti a voté pour cette proposition dans ${respected}/${statuses.length} votes.`
-      } else if (notRespected > respected) {
-        overallStatus = 'notRespected'
-        overallExplanation = `Le parti a voté contre cette proposition dans ${notRespected}/${statuses.length} votes.`
-      } else {
-        overallStatus = 'mitigated'
-        overallExplanation = `Le parti est divisé: ${respected} votes pour et ${notRespected} votes contre.`
-      }
-    }
+    const aiResult = await analyzeConsistency(
+      proposal,
+      relatedWithGroups,
+      partyGroup,
+      groupsMap,
+      themes
+    )
 
     return {
-      status: overallStatus,
-      explanation: overallExplanation,
-      relatedVotes: relatedWithGroups,
+      status: aiResult.status,
+      explanation: aiResult.explanation,
+      relatedVotes: aiResult.relatedVotes ?? relatedWithGroups,
       relatedVotesCount: relatedWithGroups.length,
-      usedOllama: false,
+      usedOllama: true,
       title: proposalTitle,
       description: proposalDescription,
     }
