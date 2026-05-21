@@ -120,7 +120,7 @@ export default function PollChart({ darkMode }) {
           {lastUpdate && ` • Mis à jour ${lastUpdate.toLocaleTimeString('fr-FR')}`}
         </p>
         <p style={{ color: secondaryText, fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', margin: 0, fontStyle: 'italic' }}>
-          📊 Données agrégées des instituts de sondage. Cliquez sur une part du graphique pour voir l'analyse détaillée du parti.
+          📊 Sondages présidentiels 2027 : Moyennes agrégées des instituts de sondage (IFOP, BVA, Elabe, OpinionWay). Cliquez sur une part du graphique pour voir l'analyse détaillée du parti.
         </p>
       </div>
 
