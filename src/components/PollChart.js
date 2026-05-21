@@ -112,12 +112,15 @@ export default function PollChart({ darkMode }) {
       marginBottom: isMobile ? '1.5rem' : '2rem',
     }}>
       <div style={{ marginBottom: '1rem' }}>
-        <h2 style={{ color: textColor, fontSize: '1.3rem', fontWeight: '600', margin: '0 0 0.5rem 0' }}>
+        <h2 style={{ color: textColor, fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', fontWeight: '600', margin: '0 0 0.5rem 0' }}>
           Sondages Présidentiels 2027
         </h2>
-        <p style={{ color: secondaryText, fontSize: '0.9rem', margin: 0 }}>
+        <p style={{ color: secondaryText, fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', margin: '0 0 0.5rem 0' }}>
           Moyenne de {pollData.sources.length} sources
           {lastUpdate && ` • Mis à jour ${lastUpdate.toLocaleTimeString('fr-FR')}`}
+        </p>
+        <p style={{ color: secondaryText, fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', margin: 0, fontStyle: 'italic' }}>
+          📊 Données agrégées des instituts de sondage. Cliquez sur une part du graphique pour voir l'analyse détaillée du parti.
         </p>
       </div>
 

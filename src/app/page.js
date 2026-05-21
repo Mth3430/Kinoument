@@ -353,6 +353,10 @@ export default function Home() {
             Les résultats dépendent de la qualité des sondages et de l'analyse sémantique de l'IA.
           </p>
           <p style={{ margin: '1rem 0 0 0' }}>
+            <Link href="/a-propos" style={{ color: '#3b82f6', textDecoration: 'none' }}>
+              À propos
+            </Link>
+            {' • '}
             <Link href="/mentions-legales" style={{ color: '#3b82f6', textDecoration: 'none' }}>
               Mentions légales
             </Link>

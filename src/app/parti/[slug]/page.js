@@ -18,6 +18,7 @@ export default function PartyPage() {
   const [darkMode, setDarkMode] = useState(true)
   const [displayedCount, setDisplayedCount] = useState(30)
   const [selectedThemes, setSelectedThemes] = useState([])
+  const [selectedStatus, setSelectedStatus] = useState([])
   const pollingRef = useRef(null)
   const sentinelRef = useRef(null)
 
@@ -59,19 +60,26 @@ export default function PartyPage() {
     new Set(comparisons.flatMap(c => c.proposal?.themes?.map(t => t.name) || []))
   ).sort()
 
-  // Filtrer les comparisons basé sur les thèmes sélectionnés
-  const filteredComparisons = selectedThemes.length === 0
-    ? comparisons
-    : comparisons.filter(c => {
-        const hasTheme = c.proposal?.themes?.some(t => selectedThemes.includes(t.name))
-        return hasTheme
-      })
+  // Filtrer les comparisons basé sur les thèmes et status sélectionnés
+  const filteredComparisons = comparisons.filter(c => {
+    const hasTheme = selectedThemes.length === 0 || c.proposal?.themes?.some(t => selectedThemes.includes(t.name))
+    const hasStatus = selectedStatus.length === 0 || selectedStatus.includes(c.status)
+    return hasTheme && hasStatus
+  })
 
   const toggleTheme = (theme) => {
     setSelectedThemes(prev =>
       prev.includes(theme)
         ? prev.filter(t => t !== theme)
         : [...prev, theme]
+    )
+  }
+
+  const toggleStatus = (status) => {
+    setSelectedStatus(prev =>
+      prev.includes(status)
+        ? prev.filter(s => s !== status)
+        : [...prev, status]
     )
   }
 
@@ -199,44 +207,90 @@ export default function PartyPage() {
 
       {comparisons.length > 0 && (
         <section>
-          {allThemes.length > 0 && (
-            <div style={{ marginBottom: '2rem' }}>
+          {/* Filtres */}
+          <div style={{ marginBottom: '2rem' }}>
+            {/* Filtre par status */}
+            <div style={{ marginBottom: '1.5rem' }}>
               <p style={{ fontSize: '0.9rem', fontWeight: '600', color: secondaryText, marginBottom: '0.75rem' }}>
-                Filtrer par thèmes:
+                Filtrer par statut:
               </p>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                {allThemes.map(theme => (
+                {[
+                  { status: 'respected', label: t.respected, color: '#10b981' },
+                  { status: 'mitigated', label: t.mitigated, color: '#f59e0b' },
+                  { status: 'notRespected', label: t.notRespected, color: '#ef4444' }
+                ].map(({ status, label, color }) => (
                   <button
-                    key={theme}
-                    onClick={() => toggleTheme(theme)}
+                    key={status}
+                    onClick={() => toggleStatus(status)}
                     style={{
                       padding: '0.5rem 1rem',
                       borderRadius: '20px',
-                      border: selectedThemes.includes(theme) ? '2px solid #3b82f6' : `1px solid ${cardBorder}`,
-                      background: selectedThemes.includes(theme) ? '#3b82f6' : 'transparent',
-                      color: selectedThemes.includes(theme) ? 'white' : textColor,
+                      border: selectedStatus.includes(status) ? `2px solid ${color}` : `1px solid ${cardBorder}`,
+                      background: selectedStatus.includes(status) ? color : 'transparent',
+                      color: selectedStatus.includes(status) ? 'white' : textColor,
                       cursor: 'pointer',
                       fontSize: '0.85rem',
                       fontWeight: '500',
                       transition: 'all 0.2s',
                     }}
                     onMouseEnter={(e) => {
-                      if (!selectedThemes.includes(theme)) {
+                      if (!selectedStatus.includes(status)) {
                         e.target.style.background = darkMode ? '#374151' : '#e5e7eb'
                       }
                     }}
                     onMouseLeave={(e) => {
-                      if (!selectedThemes.includes(theme)) {
+                      if (!selectedStatus.includes(status)) {
                         e.target.style.background = 'transparent'
                       }
                     }}
                   >
-                    {theme}
+                    {label}
                   </button>
                 ))}
               </div>
             </div>
-          )}
+
+            {/* Filtre par thèmes */}
+            {allThemes.length > 0 && (
+              <div>
+                <p style={{ fontSize: '0.9rem', fontWeight: '600', color: secondaryText, marginBottom: '0.75rem' }}>
+                  Filtrer par thèmes:
+                </p>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {allThemes.map(theme => (
+                    <button
+                      key={theme}
+                      onClick={() => toggleTheme(theme)}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        borderRadius: '20px',
+                        border: selectedThemes.includes(theme) ? '2px solid #3b82f6' : `1px solid ${cardBorder}`,
+                        background: selectedThemes.includes(theme) ? '#3b82f6' : 'transparent',
+                        color: selectedThemes.includes(theme) ? 'white' : textColor,
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        fontWeight: '500',
+                        transition: 'all 0.2s',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!selectedThemes.includes(theme)) {
+                          e.target.style.background = darkMode ? '#374151' : '#e5e7eb'
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!selectedThemes.includes(theme)) {
+                          e.target.style.background = 'transparent'
+                        }
+                      }}
+                    >
+                      {theme}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
           <h2 style={{ color: textColor, fontSize: 'clamp(1.25rem, 5vw, 1.5rem)', fontWeight: '600', marginBottom: 'clamp(1rem, 4vw, 1.5rem)' }}>
             {t.comparativeAnalysis} ({displayedCount}/{filteredComparisons.length})

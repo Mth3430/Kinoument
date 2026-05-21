@@ -70,7 +70,7 @@ export default function MentionsLegales() {
             <p><strong>Kinoument</strong> est une application web qui compare les promesses électorales des partis politiques français avec leurs votes réels au Parlement.</p>
 
             <h2 style={{ color: textColor, fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', fontWeight: '600', marginTop: '2rem', marginBottom: '0.5rem' }}>Directeur de la publication</h2>
-            <p>Mathieu Pernot<br />Contact: info@kinoument.fr</p>
+            <p>Mathieu Pernot<br />Contact: info@kinoument.fr<br /><a href="https://linkedin.com/in/mathieu-pernot" target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6' }}>LinkedIn</a></p>
 
             <h2 style={{ color: textColor, fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', fontWeight: '600', marginTop: '2rem', marginBottom: '0.5rem' }}>Sources de données</h2>
             <p>Les données de votes proviennent de l'<a href="https://data.assemblee-nationale.fr" target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6' }}>API officielle de l'Assemblée Nationale Française</a>. Les données des programmes politiques proviennent de <a href="https://tous-les-programmes.fr" target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6' }}>Tous-Les-Programmes.fr</a>. Toutes les sources de données sont du domaine public.</p>
