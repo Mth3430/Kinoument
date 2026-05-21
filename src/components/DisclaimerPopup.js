@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 export default function DisclaimerPopup({ darkMode, onShowDisclaimer }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -14,11 +14,13 @@ export default function DisclaimerPopup({ darkMode, onShowDisclaimer }) {
   }, [])
 
   // Exposer la méthode pour réafficher la popup
+  const showDisclaimer = useCallback(() => setIsOpen(true), [])
+
   useEffect(() => {
     if (onShowDisclaimer) {
-      onShowDisclaimer(() => setIsOpen(true))
+      onShowDisclaimer(showDisclaimer)
     }
-  }, [onShowDisclaimer])
+  }, [onShowDisclaimer, showDisclaimer])
 
   const handleClose = () => {
     setIsOpen(false)
