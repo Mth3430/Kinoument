@@ -18,10 +18,14 @@ Kinoument analyse les discours politiques en les confrontant à la réalité. Il
   - ✓ Respecté - la majorité des votes du parti sont POUR la proposition
   - ✗ Non respecté - la majorité des votes du parti sont CONTRE la proposition  
   - ≈ Mitigé - le parti est divisé (votes pour et contre)
+- **🔍 Filtres avancés** : Filtrer par statut (Respectés, Mitigés, Non respectés) et par thèmes
 - **📱 Interface interactive** : Grille de propositions avec chargement par scroll
-- **🔍 Pages de détail** : Vue complète de chaque proposition avec votes liés
+- **📊 Sondages présidentiels** : Affiche les moyennes de sondages avec légende explicative
+- **🔍 Pages de détail** : Vue complète de chaque proposition avec votes liés et amendements
 - **🌓 Mode sombre/clair** : Support complet des thèmes visuels
+- **📱 Mobile-first** : Design entièrement responsive pour tous les appareils
 - **🌍 Multilingue** : Support français et anglais
+- **ℹ️ Pages informatives** : Page "À propos" et "Mentions légales" complètes
 
 ## 🚀 Démarrage rapide
 
@@ -56,14 +60,19 @@ npm run start
 
 ## 📖 Utilisation
 
-1. **Explorer les programmes** : Accédez à la page d'accueil pour voir les partis disponibles
+1. **Page d'accueil** : Consultez les sondages présidentiels et sélectionnez un parti
 2. **Consulter les propositions** : Cliquez sur un parti pour voir toutes ses propositions
-3. **Analyser les détails** : Cliquez sur une proposition pour voir :
+3. **Filtrer les résultats** : 
+   - Par **statut** : Respectés, Mitigés, Non respectés
+   - Par **thèmes** : Éducation, Santé, Économie, etc.
+4. **Analyser les détails** : Cliquez sur une proposition pour voir :
    - La description complète
    - Les thématiques associées
-   - Les votes parlementaires liés
-   - L'analyse IA détaillée
-4. **Comparer** : Utilisez la grille pour comparer rapidement le respect des promesses
+   - Les votes parlementaires liés et amendements
+   - L'analyse détaillée de cohérence
+5. **En savoir plus** : 
+   - Page "À propos" pour la mission et la technologie
+   - "Mentions légales" pour les informations légales et contact
 
 ## 🏛️ Partis politiques suivis
 
@@ -113,37 +122,52 @@ npm run start
 ### Structure du projet
 ```
 src/
-├── pages/
-│   ├── api/
-│   │   ├── comparisons.js      # Endpoint principal
-│   │   ├── scraper.js          # Scraping logic
-│   │   └── diskCache.js        # Cache persistence
-│   ├── index.js                # Home
-│   ├── party/[slug].js         # Party detail
-│   └── proposal/[id].js        # Proposal detail
+├── app/
+│   ├── page.js                 # Homepage avec sondages
+│   ├── a-propos/
+│   │   └── page.js             # Page À propos
+│   ├── mentions-legales/
+│   │   └── page.js             # Page Mentions légales
+│   └── parti/[slug]/
+│       ├── page.js             # Page parti avec filtres
+│       └── proposal/[index]/
+│           └── page.js         # Détail proposition
+├── pages/api/
+│   ├── comparisons.js          # Endpoint comparaisons
+│   ├── proposal.js             # Détail proposition
+│   ├── polls.js                # Données sondages
+│   ├── polls-update.js         # Mise à jour sondages
+│   └── ollama-test.js          # Test connexion Ollama
 ├── components/
-│   ├── ProposalGrid.jsx        # Main grid view
-│   ├── ProposalCard.jsx        # Proposal card
-│   └── Navigation.jsx          # Top navigation
-└── public/
-    └── data/                   # Cached proposals
+│   ├── Navigation.js           # Navigation top
+│   ├── PollChart.js            # Graphique sondages
+│   └── DisclaimerPopup.js      # Popup avertissement
+└── lib/
+    ├── compareLogic.js         # Matching logic
+    ├── votesCache.js           # Cache votes
+    └── amendmentsCache.js      # Cache amendements
 ```
 
 ## 📋 Prochaines mises à jour (Roadmap)
 
+### 🔧 Système de cache et reloading
+- **Cache persistent** : Sauvegarder le cache sans le perdre lors des mises à jour
+- **Commandes npm** : Relancer l'analyse pour tous les partis ou un seul
+- **Historique du cache** : Backup automatique avant les mises à jour
+
 ### 🤖 Amélioration de l'IA
-- **Meilleure détection de pertinence** : Améliorer l'algorithme de matching entre propositions et votes
-- **Support multilingue avancé** : Traduction automatique des documents officiels
-- **Fine-tuning du modèle** : Adapter Llama3 au contexte politique français spécifique
-- **Explainability** : Fournir des justifications détaillées sur chaque score d'analyse
+- **Fine-tuning du modèle** : Adapter Mistral au contexte politique français
+- **Meilleure détection de pertinence** : Affiner l'algorithme de matching
 
 ### 👥 Index de fiabilité et transparence
-- **Casier judiciaire des députés** : Ajouter un indicateur du nombre de personnes élues avec antécédents judiciaires pour améliorer la fiabilité et la transparence
 - **Score de cohérence personnelle** : Mesurer la congruence entre les votes des députés et les positions du parti
 - **Historique des revirements** : Tracker les changements de positions par parti au fil du temps
-- **Métadonnées complètes** : Source des données, date d'analyse, version du modèle IA utilisé
+- **Comparaison inter-partis** : Vue comparative des positions sur des thèmes spécifiques
 
-### 🎁 Surprises à venir
+### 📊 Visualisations avancées
+- **Graphiques de tendances** : Évolution de la cohérence par parti dans le temps
+- **Heatmaps thématiques** : Visualiser les forces et faiblesses de chaque parti par domaine
+- **Analyse des votes** : Détail des votes par amendement avec justifications
 
 ## 🛠️ Développement
 
@@ -159,7 +183,16 @@ npm run lint     # Vérification ESLint
 ```bash
 # .env.local ou .env
 NEXT_PUBLIC_API_URL=http://localhost:3000
-OLLAMA_URL=http://localhost:11434  # URL du serveur Ollama
+
+# Ollama Configuration
+OLLAMA_URL=http://localhost:11434/api/generate  # URL du serveur Ollama (défaut: localhost)
+OLLAMA_MODEL=mistral                            # Modèle Ollama (défaut: mistral)
+```
+
+**Configuration serveur distant** :
+```bash
+# Sur un serveur avec Ollama distant
+OLLAMA_URL=http://192.168.1.100:11434/api/generate
 ```
 
 ## 📊 Statistiques
@@ -189,11 +222,11 @@ Ce projet est sous licence [MIT](LICENSE) - libre d'utilisation à titre personn
 
 ## 👤 Auteur
 
-- **Mathieu Pernot** - [GitHub](https://github.com/Mth3430)
+- **Mathieu Pernot** - [GitHub](https://github.com/Mth3430) | [LinkedIn](https://linkedin.com/in/mathieu-pernot)
 
 ## 📧 Contact
 
-Pour des questions ou suggestions : math.pernot30@gmail.com
+Pour des questions ou suggestions : info@kinoument.fr
 
 ## 🔗 Ressources utiles
 
