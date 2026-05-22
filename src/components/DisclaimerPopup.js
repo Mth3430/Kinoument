@@ -1,26 +1,22 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react'
 
-export default function DisclaimerPopup({ darkMode, onShowDisclaimer }) {
+const DisclaimerPopup = forwardRef(({ darkMode }, ref) => {
   const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
-    // Afficher la popup si c'est la première visite
-    const hasSeenDisclaimer = localStorage.getItem('disclaimerSeen')
-    if (!hasSeenDisclaimer) {
-      setIsOpen(true)
+    if (typeof window !== 'undefined') {
+      const hasSeenDisclaimer = localStorage.getItem('disclaimerSeen')
+      if (!hasSeenDisclaimer) {
+        setIsOpen(true)
+      }
     }
   }, [])
 
-  // Exposer la méthode pour réafficher la popup
-  const showDisclaimer = useCallback(() => setIsOpen(true), [])
-
-  useEffect(() => {
-    if (onShowDisclaimer) {
-      onShowDisclaimer(showDisclaimer)
-    }
-  }, [onShowDisclaimer, showDisclaimer])
+  useImperativeHandle(ref, () => ({
+    show: () => setIsOpen(true),
+  }), [])
 
   const handleClose = () => {
     setIsOpen(false)
@@ -31,7 +27,6 @@ export default function DisclaimerPopup({ darkMode, onShowDisclaimer }) {
 
   const bgColor = darkMode ? '#1f2937' : '#ffffff'
   const textColor = darkMode ? '#f3f4f6' : '#1f2937'
-  const borderColor = darkMode ? '#374151' : '#e5e7eb'
   const accentColor = '#ef4444'
 
   return (
@@ -125,4 +120,7 @@ export default function DisclaimerPopup({ darkMode, onShowDisclaimer }) {
       </div>
     </div>
   )
-}
+})
+
+DisclaimerPopup.displayName = 'DisclaimerPopup'
+export default DisclaimerPopup

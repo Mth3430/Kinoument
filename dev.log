@@ -1,0 +1,23 @@
+
+> political-comparator@0.1.0 dev
+> next dev
+
+⚠ Port 3000 is in use by process 26344, using available port 3001 instead.
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://192.168.1.113:3001
+- Environments: .env.local
+✓ Ready in 368ms
+⚠ `experimental.instrumentationHook` is no longer needed, because `instrumentation.js` is available by default. You can remove it from next.config.js.
+⚠ Invalid next.config.js options detected: 
+⚠     Unrecognized key(s) in object: 'instrumentationHook' at "experimental"
+⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+⨯ Another next dev server is already running.
+
+- Local:        http://localhost:3000
+- PID:          26344
+- Dir:          c:\Users\mathi\Desktop\Kinoument
+- Log:          .next\dev\logs\next-development.log
+
+Run taskkill /PID 26344 /F to stop it.
+[?25h

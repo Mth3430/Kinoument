@@ -10,7 +10,7 @@ export default function Home() {
   const [language, setLanguage] = useState('fr')
   const [darkMode, setDarkMode] = useState(true)
   const [partiesStatus, setPartiesStatus] = useState([])
-  const [showDisclaimer, setShowDisclaimer] = useState(null)
+  const disclaimerRef = useRef(null)
   const pollingRef = useRef(null)
 
   const translations = {
@@ -98,7 +98,7 @@ export default function Home() {
 
   return (
     <>
-      <DisclaimerPopup darkMode={darkMode} onShowDisclaimer={setShowDisclaimer} />
+      <DisclaimerPopup ref={disclaimerRef} darkMode={darkMode} />
       <Navigation
         darkMode={darkMode}
         onDarkModeChange={setDarkMode}
@@ -238,25 +238,23 @@ export default function Home() {
           <h2 style={{ color: textColor, fontSize: '1.5rem', fontWeight: '600', margin: 0 }}>
             Comment ça marche ?
           </h2>
-          {showDisclaimer && (
-            <button
-              onClick={() => showDisclaimer()}
-              style={{
-                padding: '0.5rem 1rem',
-                background: '#ef4444',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-                fontWeight: '500',
-              }}
-              onMouseEnter={(e) => e.target.style.background = '#dc2626'}
-              onMouseLeave={(e) => e.target.style.background = '#ef4444'}
-            >
-              ⚠️ Voir l'avis de neutralité
-            </button>
-          )}
+          <button
+            onClick={() => disclaimerRef.current?.show()}
+            style={{
+              padding: '0.5rem 1rem',
+              background: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              fontWeight: '500',
+            }}
+            onMouseEnter={(e) => e.target.style.background = '#dc2626'}
+            onMouseLeave={(e) => e.target.style.background = '#ef4444'}
+          >
+            ⚠️ Voir l'avis de neutralité
+          </button>
         </div>
 
         <div style={{
