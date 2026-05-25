@@ -86,8 +86,6 @@ npm run start
 | Europe Écologie Les Verts | ✅ | EELV |
 | Parti Communiste Français | ✅ | PCF |
 | Reconquête | ✅ | REC |
-| Place Publique | ✅ | PP |
-| Lutte Ouvrière | 🔄 | LO |
 
 ## 🏗️ Architecture
 
