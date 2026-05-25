@@ -173,25 +173,31 @@ src/
 
 ### Commandes disponibles
 ```bash
-npm run dev           # Serveur de développement avec hot reload (cache only)
-npm run update-cache  # Met à jour le cache en arrière-plan (pas d'interruption API)
-npm run build         # Compilation pour production
-npm run start         # Serveur production
-npm run lint          # Vérification ESLint
+npm run dev                          # Serveur de développement (cache only)
+npm run update-cache                 # Met à jour le cache complet en arrière-plan
+npm run update-party <slug>          # Met à jour un seul parti
+npm run build                        # Compilation pour production
+npm run start                        # Serveur production
+npm run lint                         # Vérification ESLint
 ```
 
 ### 📦 Système de cache
 
 **Mode rapide (par défaut)** :
 - `npm run dev` lance le serveur avec le cache existant uniquement
-- Démarrage ultra-rapide (< 2 secondes)
+- Démarrage ultra-rapide (< 1.5 secondes)
 - Pas de recomparaisons, l'API retourne immédiatement les données en cache
 
-**Mise à jour du cache** :
-- `npm run update-cache` lance une mise à jour en arrière-plan
+**Mise à jour du cache complet** :
+- `npm run update-cache` met à jour tous les partis en arrière-plan
 - Le serveur continue de fonctionner avec le cache actuel pendant la mise à jour
 - Une fois la mise à jour terminée, le nouveau cache remplace l'ancien automatiquement
 - Aucune interruption du service utilisateur
+
+**Mise à jour d'un parti spécifique** :
+- `npm run update-party <slug>` met à jour un seul parti
+- Exemple: `npm run update-party renaissance`
+- Slugs disponibles: `renaissance`, `rassemblement-national`, `la-france-insoumise`, `les-republicains`, `parti-socialiste`, `europe-ecologie-les-verts`, `parti-communiste-francais`, `reconquete`
 
 ### Variables d'environnement
 ```bash
