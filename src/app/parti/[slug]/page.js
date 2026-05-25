@@ -293,7 +293,7 @@ export default function PartyPage() {
           </div>
 
           <h2 style={{ color: textColor, fontSize: 'clamp(1.25rem, 5vw, 1.5rem)', fontWeight: '600', marginBottom: 'clamp(1rem, 4vw, 1.5rem)' }}>
-            {t.comparativeAnalysis} ({displayedCount}/{filteredComparisons.length})
+            {t.comparativeAnalysis} ({filteredComparisons.length})
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(clamp(280px, 90vw, 340px), 1fr))', gap: 'clamp(1rem, 3vw, 1.5rem)' }}>
             {filteredComparisons.slice(0, displayedCount).map((item) => {

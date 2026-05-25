@@ -9,11 +9,10 @@
         "les-republicains": 18,
         "la-france-insoumise": 16,
         "rassemblement-national": 22,
-        "parti-socialiste": 8,
+        "parti-socialiste": 10,
         "europe-ecologie-les-verts": 6,
         "parti-communiste-francais": 3,
-        "reconquete": 2,
-        "place-publique": 2
+        "reconquete": 2
       }
     },
     "BVA": {
@@ -25,11 +24,10 @@
         "les-republicains": 17,
         "la-france-insoumise": 17,
         "rassemblement-national": 21,
-        "parti-socialiste": 9,
+        "parti-socialiste": 10,
         "europe-ecologie-les-verts": 7,
         "parti-communiste-francais": 2,
-        "reconquete": 2,
-        "place-publique": 1
+        "reconquete": 2
       }
     },
     "Elabe": {
@@ -41,11 +39,10 @@
         "les-republicains": 19,
         "la-france-insoumise": 15,
         "rassemblement-national": 20,
-        "parti-socialiste": 8,
+        "parti-socialiste": 9,
         "europe-ecologie-les-verts": 5,
         "parti-communiste-francais": 4,
-        "reconquete": 3,
-        "place-publique": 1
+        "reconquete": 3
       }
     },
     "OpinionWay": {
@@ -57,11 +54,10 @@
         "les-republicains": 20,
         "la-france-insoumise": 16,
         "rassemblement-national": 23,
-        "parti-socialiste": 7,
+        "parti-socialiste": 8,
         "europe-ecologie-les-verts": 6,
         "parti-communiste-francais": 3,
-        "reconquete": 2,
-        "place-publique": 1
+        "reconquete": 2
       }
     }
   },
