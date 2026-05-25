@@ -173,11 +173,25 @@ src/
 
 ### Commandes disponibles
 ```bash
-npm run dev      # Serveur de développement avec hot reload
-npm run build    # Compilation pour production
-npm run start    # Serveur production
-npm run lint     # Vérification ESLint
+npm run dev           # Serveur de développement avec hot reload (cache only)
+npm run update-cache  # Met à jour le cache en arrière-plan (pas d'interruption API)
+npm run build         # Compilation pour production
+npm run start         # Serveur production
+npm run lint          # Vérification ESLint
 ```
+
+### 📦 Système de cache
+
+**Mode rapide (par défaut)** :
+- `npm run dev` lance le serveur avec le cache existant uniquement
+- Démarrage ultra-rapide (< 2 secondes)
+- Pas de recomparaisons, l'API retourne immédiatement les données en cache
+
+**Mise à jour du cache** :
+- `npm run update-cache` lance une mise à jour en arrière-plan
+- Le serveur continue de fonctionner avec le cache actuel pendant la mise à jour
+- Une fois la mise à jour terminée, le nouveau cache remplace l'ancien automatiquement
+- Aucune interruption du service utilisateur
 
 ### Variables d'environnement
 ```bash
