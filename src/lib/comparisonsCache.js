@@ -316,20 +316,67 @@ async function preloadParty(party) {
 }
 
 export async function quickLoadFromDisk() {
-  await Promise.all(
+  const results = await Promise.all(
     PARTIES.map(async (party) => {
-      const diskData = await loadFromDisk(`comparisons-${party.slug}`)
-      if (diskData?.comparisons?.length > 0) {
-        cache.set(party.slug, {
-          status: 'ready',
-          comparisons: diskData.comparisons,
-          progress: diskData.comparisons.length,
-          total: diskData.comparisons.length,
-        })
-        console.log(`[preload] ${party.name} : chargé depuis le cache disque (${diskData.comparisons.length} comparaisons)`)
+      try {
+        const diskData = await loadFromDisk(`comparisons-${party.slug}`)
+        if (diskData?.comparisons?.length > 0) {
+          cache.set(party.slug, {
+            status: 'ready',
+            comparisons: diskData.comparisons,
+            progress: diskData.comparisons.length,
+            total: diskData.comparisons.length,
+          })
+          return { party: party.name, count: diskData.comparisons.length }
+        }
+      } catch (e) {
+        console.warn(`[preload] ${party.name} erreur chargement:`, e.message)
       }
+      return null
     })
   )
+
+  results.forEach((r) => {
+    if (r) console.log(`[preload] ${r.party} : chargé (${r.count} comparaisons)`)
+  })
+}
+
+// Met à jour un seul parti dans le cache temporaire et swap une fois terminé
+export async function preloadSinglePartyIntoUpdate(slug) {
+  const party = PARTIES.find(p => p.slug === slug)
+  if (!party) {
+    throw new Error(`Parti non trouvé: ${slug}`)
+  }
+
+  updateCache.clear()
+  console.log(`[update] ⏳ Mise à jour de ${party.name}...`)
+
+  try {
+    const diskData = await loadFromDisk(`comparisons-${party.slug}`)
+
+    if (diskData?.comparisons?.length > 0) {
+      updateCache.set(party.slug, {
+        status: 'loading',
+        comparisons: [...diskData.comparisons],
+        progress: 0,
+        total: diskData.comparisons.length,
+      })
+    } else {
+      updateCache.set(party.slug, { status: 'loading', comparisons: [], progress: 0, total: 0 })
+    }
+
+    await checkForUpdates(party, diskData)
+
+    // Swap: remplacer dans le cache principal
+    cache.set(party.slug, updateCache.get(party.slug))
+    updateCache.clear()
+
+    console.log(`[update] ✅ ${party.name} mis à jour et appliqué`)
+  } catch (e) {
+    updateCache.clear()
+    console.error(`[update] ${party.name} échoué:`, e.message)
+    throw e
+  }
 }
 
 // Charge dans le cache temporaire et swap une fois terminé (pour l'update sans interruption)
