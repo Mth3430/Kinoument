@@ -97,7 +97,7 @@ export default function AboutPage() {
             color: secondaryText,
           }}>
             <div style={{ marginBottom: '0.75rem' }}>
-              <strong>{t.version}:</strong> 1.1.0
+              <strong>{t.version}:</strong> 0.1.1
             </div>
             <div>
               <strong>{t.lastUpdate}:</strong> 22 mai 2026
