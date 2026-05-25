@@ -33,7 +33,7 @@ yarn-error.log*
 .env.production.local
 
 # Cache
-# .cache/ - INCLUDED to share preloaded data
+.cache/
 *.cache
 .eslintcache
 
