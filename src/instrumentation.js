@@ -2,11 +2,11 @@ export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     const { getVotes } = await import('./lib/votesCache')
     const { getGroupsMap } = await import('./lib/groupsCache')
-    const { preloadAllParties } = await import('./lib/comparisonsCache')
+    const { quickLoadFromDisk } = await import('./lib/comparisonsCache')
     const { preloadAmendmentsCache } = await import('./lib/amendmentsCache')
 
     console.log('[preload] ⏳ Chargement complet au démarrage...')
-    console.log('[preload] Chargement des votes, groupes et amendements...')
+    console.log('[preload] Chargement des votes, groupes...')
 
     const startTime = Date.now()
 
@@ -15,14 +15,15 @@ export async function register() {
       getGroupsMap().then((g) => console.log(`[preload] ✓ ${g.size} groupes chargés`)).catch((e) => console.warn('[preload] ✗ groupes échoué:', e.message)),
     ])
 
+    // Charge le cache disque en parallèle pour tous les partis (bloque le démarrage du serveur)
+    console.log('[preload] 📦 Chargement du cache disque...')
+    await quickLoadFromDisk()
+    console.log('[preload] ✅ Cache disque chargé')
+
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
+    console.log(`[preload] 🚀 Prêt! (${elapsed}s)`)
+
     // Lance preloadAmendmentsCache EN ARRIÈRE-PLAN (don't wait)
     preloadAmendmentsCache().catch((e) => console.warn('[preload] ✗ amendements échoué:', e.message))
-
-    // Analyse COMPLÈTE de tous les partis EN ARRIÈRE-PLAN (don't wait)
-    console.log('[preload] 🔄 Analyse de tous les partis en cours en arrière-plan...')
-    preloadAllParties().then(() => {
-      const elapsed = ((Date.now() - startTime) / 1000 / 60).toFixed(1)
-      console.log(`[preload] ✅ PRÊT! Temps total: ${elapsed} minutes`)
-    }).catch((e) => console.warn('[preload] ✗ analyse échouée:', e.message))
   }
 }

@@ -16,9 +16,11 @@ const PARTIES = [
 
 // global persiste entre les re-évaluations de modules par Next.js
 if (!global._comparisonsCache) global._comparisonsCache = new Map()
+if (!global._updateCache) global._updateCache = new Map()
 if (global._preloadStarted === undefined) global._preloadStarted = false
 
 const cache = global._comparisonsCache
+const updateCache = global._updateCache
 
 export function getPartyCache(slug) {
   return cache.get(slug) || { status: 'pending', comparisons: [], progress: 0, total: 0 }
@@ -311,6 +313,61 @@ async function preloadParty(party) {
 
   // Pas de cache disque : analyse complète
   await fullPreloadParty(party)
+}
+
+export async function quickLoadFromDisk() {
+  await Promise.all(
+    PARTIES.map(async (party) => {
+      const diskData = await loadFromDisk(`comparisons-${party.slug}`)
+      if (diskData?.comparisons?.length > 0) {
+        cache.set(party.slug, {
+          status: 'ready',
+          comparisons: diskData.comparisons,
+          progress: diskData.comparisons.length,
+          total: diskData.comparisons.length,
+        })
+        console.log(`[preload] ${party.name} : chargé depuis le cache disque (${diskData.comparisons.length} comparaisons)`)
+      }
+    })
+  )
+}
+
+// Charge dans le cache temporaire et swap une fois terminé (pour l'update sans interruption)
+export async function preloadAllPartiesIntoUpdate() {
+  updateCache.clear()
+  console.log('[update] ⏳ Mise à jour du cache temporaire...')
+
+  let failed = 0
+  for (const party of PARTIES) {
+    try {
+      const diskData = await loadFromDisk(`comparisons-${party.slug}`)
+
+      if (diskData?.comparisons?.length > 0) {
+        updateCache.set(party.slug, {
+          status: 'loading',
+          comparisons: [...diskData.comparisons],
+          progress: 0,
+          total: diskData.comparisons.length,
+        })
+      } else {
+        updateCache.set(party.slug, { status: 'loading', comparisons: [], progress: 0, total: 0 })
+      }
+
+      await checkForUpdates(party, diskData)
+    } catch (e) {
+      failed++
+      console.warn(`[update] ${party.name} échoué:`, e.message)
+    }
+  }
+
+  // Swap: remplacer le cache principal par le cache temporaire
+  Object.assign(cache, updateCache)
+  updateCache.clear()
+
+  if (failed > 0) {
+    console.warn(`[update] ${failed}/${PARTIES.length} partis ont échoué`)
+  }
+  console.log('[update] ✅ Mise à jour terminée et appliquée')
 }
 
 export async function preloadAllParties() {
