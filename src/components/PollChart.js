@@ -54,7 +54,7 @@ export default function PollChart({ darkMode }) {
   }, [])
 
   const pollSourceLinks = {
-    'IFOP': 'https://www.ifop.com/publication/',
+    'ifop.com': 'https://www.ifop.com/',
     'BVA': 'https://www.bva-group.com/',
     'Elabe': 'https://www.elabe.fr/',
     'OpinionWay': 'https://www.opinion-way.com/',

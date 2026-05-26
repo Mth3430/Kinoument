@@ -189,7 +189,7 @@ export default function Home() {
                 margin: '0 0 0.75rem 0',
               }}>
                 {party.name}
-                {ps && (
+                {ps && !isReady && (
                   <span style={{
                     fontSize: '0.65em',
                     padding: '2px 8px',
@@ -198,7 +198,7 @@ export default function Home() {
                     color: 'white',
                     fontWeight: '500',
                   }}>
-                    {isReady ? t.statusReady : ps.status === 'loading' ? `${ps.progress}/${ps.total}` : t.statusPending}
+                    {ps.status === 'loading' ? `${ps.progress}/${ps.total}` : t.statusPending}
                   </span>
                 )}
               </h3>
