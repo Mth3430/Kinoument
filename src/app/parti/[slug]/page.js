@@ -83,6 +83,21 @@ export default function PartyPage() {
     )
   }
 
+  // Calculer les pourcentages des statuts
+  const totalComparisons = comparisons.length
+  const statusStats = {
+    respected: comparisons.filter(c => c.status === 'respected').length,
+    notRespected: comparisons.filter(c => c.status === 'notRespected').length,
+    mitigated: comparisons.filter(c => c.status === 'mitigated').length,
+    unknown: comparisons.filter(c => c.status === 'unknown').length,
+  }
+  const statusPercentages = {
+    respected: totalComparisons > 0 ? Math.round((statusStats.respected / totalComparisons) * 100) : 0,
+    notRespected: totalComparisons > 0 ? Math.round((statusStats.notRespected / totalComparisons) * 100) : 0,
+    mitigated: totalComparisons > 0 ? Math.round((statusStats.mitigated / totalComparisons) * 100) : 0,
+    unknown: totalComparisons > 0 ? Math.round((statusStats.unknown / totalComparisons) * 100) : 0,
+  }
+
   const parties = [
     { name: 'Renaissance', slug: 'renaissance', group: 'PO800538' },
     { name: 'Rassemblement National', slug: 'rassemblement-national', group: 'PO800520' },
@@ -195,6 +210,96 @@ export default function PartyPage() {
       <p style={{ color: secondaryText, marginBottom: 'clamp(1rem, 4vw, 2rem)', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
         Analyse comparative avec les votes de l'Assemblée Nationale
       </p>
+
+      {comparisons.length > 0 && (
+        <div style={{ marginBottom: '2rem', position: 'relative' }}>
+          <div style={{
+            display: 'flex',
+            height: '30px',
+            borderRadius: '6px',
+            overflow: 'hidden',
+            background: '#f0f0f0',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            group: 'stats-bar'
+          }}>
+            {statusPercentages.respected > 0 && (
+              <div
+                style={{
+                  width: `${statusPercentages.respected}%`,
+                  background: '#10b981',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: '0.75rem',
+                  fontWeight: '600',
+                  position: 'relative',
+                  cursor: 'pointer',
+                  transition: 'opacity 0.2s'
+                }}
+                title={`Respecté: ${statusPercentages.respected}%`}
+              />
+            )}
+            {statusPercentages.mitigated > 0 && (
+              <div
+                style={{
+                  width: `${statusPercentages.mitigated}%`,
+                  background: '#f59e0b',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: '0.75rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'opacity 0.2s'
+                }}
+                title={`Mitigé: ${statusPercentages.mitigated}%`}
+              />
+            )}
+            {statusPercentages.notRespected > 0 && (
+              <div
+                style={{
+                  width: `${statusPercentages.notRespected}%`,
+                  background: '#ef4444',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: '0.75rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'opacity 0.2s'
+                }}
+                title={`Non respecté: ${statusPercentages.notRespected}%`}
+              />
+            )}
+            {statusPercentages.unknown > 0 && (
+              <div
+                style={{
+                  width: `${statusPercentages.unknown}%`,
+                  background: '#9ca3af',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: '0.75rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'opacity 0.2s'
+                }}
+                title={`Inconnu: ${statusPercentages.unknown}%`}
+              />
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '0.75rem', fontSize: '0.85rem', color: secondaryText }}>
+            <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: '#10b981', borderRadius: '2px', marginRight: '0.5rem' }}></span>Respecté: {statusPercentages.respected}%</span>
+            <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: '#f59e0b', borderRadius: '2px', marginRight: '0.5rem' }}></span>Mitigé: {statusPercentages.mitigated}%</span>
+            <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: '#ef4444', borderRadius: '2px', marginRight: '0.5rem' }}></span>Non respecté: {statusPercentages.notRespected}%</span>
+            <span><span style={{ display: 'inline-block', width: '12px', height: '12px', background: '#9ca3af', borderRadius: '2px', marginRight: '0.5rem' }}></span>Inconnu: {statusPercentages.unknown}%</span>
+          </div>
+        </div>
+      )}
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
