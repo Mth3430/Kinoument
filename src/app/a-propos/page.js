@@ -100,7 +100,7 @@ export default function AboutPage() {
               <strong>{t.version}:</strong> 1.2.2
             </div>
             <div>
-              <strong>{t.lastUpdate}:</strong> 22 mai 2026
+              <strong>{t.lastUpdate}:</strong> 26 mai 2026
             </div>
           </div>
 
